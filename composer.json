@@ -1,0 +1,47 @@
+{
+    "name": "onix/yii2-telegram",
+    "description": "The Telegram integration for the Yii framework",
+    "type": "yii2-extension",
+    "keywords": [
+        "yii2",
+        "extension",
+        "telegram",
+        "bot"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Nick Panteleeff",
+            "email": "drnix@chess-online.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.2.0",
+        "ext-json": "*",
+        "ext-curl": "*",
+
+        "yiisoft/yii2": "~2.0.0",
+
+        "drnixx/yii2-onix": "^1.14"
+    },
+    "require-dev": {
+        "yiisoft/yii2-faker": "~2.0.0",
+        "codeception/codeception": "^4.0",
+        "codeception/module-asserts": "^1.0",
+        "codeception/module-yii2": "^1.0",
+        "codeception/module-filesystem": "^1.0",
+        "codeception/verify": "~0.5.0 || ~1.1.0",
+        "codeception/module-phpbrowser": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "onix\\telegram\\": "src"
+        }
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+        }
+    ]
+}
