@@ -556,10 +556,10 @@ class Request extends BaseObject
         unset($item);
 
         if ($has_resource) {
-            return ['multipart' => $multipart];
+            return $multipart;
         }
 
-        return ['form_params' => $data];
+        return $data;
     }
 
     /**
