@@ -21,6 +21,10 @@ or add
 
 to the require section of your `composer.json` file.
 
+Apply migration
+```
+yii migrate/up --migrationPath=@vendor/onix/yii2-telegram/src/migrations
+```
 
 Usage
 -----

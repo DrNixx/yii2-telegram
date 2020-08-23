@@ -4,9 +4,15 @@ namespace onix\telegram\console;
 use onix\telegram\Telegram;
 use yii\console\Controller;
 
+/**
+ * Manage Telegram bot
+ */
 class TelegramController extends Controller
 {
-    public function webhookinfoAction()
+    /**
+     * Retrieve information about the current status of a webhook.
+     */
+    public function actionWebhookinfo()
     {
         /** @var Telegram $tg */
         /** @noinspection PhpUndefinedFieldInspection */
