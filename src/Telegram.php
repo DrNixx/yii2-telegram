@@ -97,7 +97,7 @@ class Telegram extends Component
      *
      * @var array
      */
-    protected $admins_list = [];
+    public $admins = [];
 
     /**
      * ServerResponse of the last Command execution
@@ -447,7 +447,6 @@ class Telegram extends Component
             $command_obj = $this->getCommandObject($command_tmp);
 
             // Empty usage string denotes a non-executable command.
-            // @see https://github.com/php-telegram-bot/core/issues/772#issuecomment-388616072
             if (($command_obj === null && $type === 'command') ||
                 ($command_obj !== null && $command_obj->getUsage() !== '')
             ) {
@@ -529,8 +528,8 @@ class Telegram extends Component
     {
         if (!is_int($admin_id) || $admin_id <= 0) {
             Yii::error('Invalid value "' . $admin_id . '" for admin.', 'telegram');
-        } elseif (!in_array($admin_id, $this->admins_list, true)) {
-            $this->admins_list[] = $admin_id;
+        } elseif (!in_array($admin_id, $this->admins, true)) {
+            $this->admins[] = $admin_id;
         }
 
         return $this;
@@ -559,7 +558,7 @@ class Telegram extends Component
      */
     public function getAdminList()
     {
-        return $this->admins_list;
+        return $this->admins;
     }
 
     /**
@@ -575,26 +574,26 @@ class Telegram extends Component
     {
         if ($user_id === null && $this->update !== null) {
             //Try to figure out if the user is an admin
-            $update_methods = [
-                'getMessage',
-                'getEditedMessage',
-                'getChannelPost',
-                'getEditedChannelPost',
-                'getInlineQuery',
-                'getChosenInlineResult',
-                'getCallbackQuery',
+            $update_props = [
+                'message',
+                'editedMessage',
+                'channelPost',
+                'editedChannelPost',
+                'inlineQuery',
+                'chosenInlineResult',
+                'callbackQuery',
             ];
 
-            foreach ($update_methods as $update_method) {
-                $object = call_user_func([$this->update, $update_method]);
-                if ($object !== null && $from = $object->getFrom()) {
-                    $user_id = $from->getId();
+            foreach ($update_props as $prop) {
+                $object = $this->update->$prop;
+                if ($object !== null && $from = $object->from) {
+                    $user_id = $from->id;
                     break;
                 }
             }
         }
 
-        return ($user_id === null) ? false : in_array($user_id, $this->admins_list, true);
+        return ($user_id === null) ? false : in_array($user_id, $this->admins, true);
     }
 
     /**

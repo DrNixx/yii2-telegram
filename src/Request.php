@@ -790,8 +790,6 @@ class Request extends BaseObject
      * If a method doesn't require parameters, we need to add a dummy one anyway,
      * because of some cURL version failed POST request without parameters.
      *
-     * @link https://github.com/php-telegram-bot/core/pull/228
-     *
      * @todo Would be nice to find a better solution for this!
      *
      * @param string $action
