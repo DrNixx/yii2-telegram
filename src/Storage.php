@@ -48,7 +48,7 @@ class Storage
     /**
      * Fetch message(s) from DB
      *
-     * @param int $limit Limit the number of messages to fetch
+     * @param int|null $limit Limit the number of messages to fetch
      *
      * @return MessageRepo[]|bool Fetched data or false if not connected
      */
@@ -65,7 +65,7 @@ class Storage
     /**
      * Convert from unix timestamp to timestamp
      *
-     * @param int $time Unix timestamp (if empty, current timestamp is used)
+     * @param int|null $time Unix timestamp (if empty, current timestamp is used)
      *
      * @return string
      */
@@ -283,7 +283,7 @@ class Storage
         if ($chat) {
             $userChatRepo = UserChatRepo::findOne(['user_id' => $user->id, 'chat_id' => $chat->id]);
             if ($userChatRepo === null) {
-                $userChatRepo = new ChatRepo([
+                $userChatRepo = new UserChatRepo([
                     'user_id' => $user->id,
                     'chat_id' => $chat->id
                 ]);
