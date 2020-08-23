@@ -267,6 +267,8 @@ class Telegram extends Component
             }
         }
 
+        Yii::debug(print_r($commands, true));
+
         return $commands;
     }
 

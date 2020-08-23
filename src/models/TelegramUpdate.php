@@ -132,14 +132,20 @@ class TelegramUpdate extends ActiveRecordEx
                 'exist',
                 'skipOnError' => true,
                 'targetClass' => Message::class,
-                'targetAttribute' => ['chat_id' => 'chat_id', 'message_id' => 'id']
+                'targetAttribute' => ['chat_id' => 'chat_id', 'message_id' => 'id'],
+                'when' => function($model) {
+                    return !empty($model->chat_id) && !empty($model->message_id);
+                }
             ],
             [
                 ['chat_id', 'channel_post_id'],
                 'exist',
                 'skipOnError' => true,
                 'targetClass' => Message::class,
-                'targetAttribute' => ['chat_id' => 'chat_id', 'channel_post_id' => 'id']
+                'targetAttribute' => ['chat_id' => 'chat_id', 'channel_post_id' => 'id'],
+                'when' => function($model) {
+                    return !empty($model->chat_id) && !empty($model->channel_post_id);
+                }
             ],
             [
                 ['poll_id'],
