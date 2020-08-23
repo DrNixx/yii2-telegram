@@ -59,7 +59,7 @@ abstract class Command extends BaseObject
      *
      * @var Telegram
      */
-    protected $telegram;
+    private $telegram;
 
     /**
      * Update object
@@ -129,9 +129,15 @@ abstract class Command extends BaseObject
      */
     protected $request;
 
+    /**
+     * @inheritDoc
+     *
+     * @throws InvalidConfigException
+     */
     public function init()
     {
         $this->config = $this->getTelegram()->getCommandConfig($this->name);
+        $this->request = $this->getTelegram()->request;
     }
 
     /**
@@ -405,10 +411,12 @@ abstract class Command extends BaseObject
      * Helper to reply to a chat directly.
      *
      * @param string $text
-     * @param array  $data
+     * @param array $data
      *
      * @return ServerResponse
+     *
      * @throws TelegramException
+     * @throws BaseException
      */
     public function replyToChat($text, array $data = [])
     {
@@ -430,10 +438,12 @@ abstract class Command extends BaseObject
      * Helper to reply to a user directly.
      *
      * @param string $text
-     * @param array  $data
+     * @param array $data
      *
      * @return ServerResponse
+     *
      * @throws TelegramException
+     * @throws BaseException
      */
     public function replyToUser($text, array $data = [])
     {

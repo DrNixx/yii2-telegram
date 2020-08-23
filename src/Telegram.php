@@ -17,7 +17,6 @@ use Yii;
 use yii\base\Component;
 use yii\base\Exception as BaseException;
 use yii\base\InvalidConfigException;
-use yii\helpers\Inflector;
 use yii\helpers\Json;
 
 /**
