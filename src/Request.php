@@ -654,9 +654,9 @@ class Request extends BaseObject
      * @param string $action Action to execute
      * @param array  $data   Data to attach to the execution
      *
-     * @return string Result of the HTTP Request
+     * @return mixed Result of the HTTP Request
      */
-    public function execute($action, array $data = [])
+    protected function execute($action, array $data = [])
     {
         $result = null;
         $request_params = $this->setUpRequestParams($data);
@@ -754,20 +754,19 @@ class Request extends BaseObject
 
         self::ensureNonEmptyData($data);
 
-        self::limitTelegramRequests($action, $data);
+        $this->limitTelegramRequests($action, $data);
 
         // Remember which action is currently being executed.
         $this->current_action = $action;
 
         $raw_response = $this->execute($action, $data);
-        $response = Json::decode($raw_response, true);
 
-        if (null === $response) {
+        if (null === $raw_response) {
             Yii::debug($raw_response);
             throw new TelegramException('Telegram returned an invalid response!');
         }
 
-        $response = new ServerResponse($response);
+        $response = new ServerResponse($raw_response);
 
         if (!$response->isOk() && $response->errorCode === 401 && $response->description === 'Unauthorized') {
             throw new InvalidBotTokenException();
@@ -921,7 +920,7 @@ class Request extends BaseObject
         if (is_array($chats)) {
             foreach ($chats as $row) {
                 $data['chat_id'] = $row->id;
-                $results[] = self::send($callback_function, $data);
+                $results[] = $this->send($callback_function, $data);
             }
         }
 
