@@ -82,7 +82,7 @@ class Storage
      *
      * @return mixed
      */
-    public static function entityToJson(Entity $entity, $default = null)
+    public static function entityToJson($entity, $default = null)
     {
         if ($entity === null) {
             return $default;
