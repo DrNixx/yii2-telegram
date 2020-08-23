@@ -6,6 +6,7 @@ use onix\telegram\exceptions\InvalidWebhookException;
 use onix\telegram\exceptions\TelegramException;
 use onix\telegram\Telegram;
 use Yii;
+use yii\base\Exception as BaseException;
 use yii\console\Controller;
 use yii\helpers\Json;
 
@@ -37,6 +38,8 @@ class TelegramController extends Controller
     }
 
     /**
+     * Set Webhook for bot.
+     *
      * @throws TelegramException
      */
     public function actionSetWebhook()
@@ -82,6 +85,8 @@ class TelegramController extends Controller
     }
 
     /**
+     * Delete any assigned webhook.
+     *
      * @throws TelegramException
      */
     public function actionDeleteWebhook()
@@ -93,5 +98,24 @@ class TelegramController extends Controller
         $response = $tg->deleteWebhook();
 
         $this->printResponse($response);
+    }
+
+    /**
+     * Receive incoming updates from telegram bot.
+     *
+     * @throws TelegramException
+     * @throws BaseException
+     */
+    public function actionGetUpdates()
+    {
+        /** @var Telegram $tg */
+        /** @noinspection PhpUndefinedFieldInspection */
+        $tg = \Yii::$app->telegram;
+
+        $response = $tg->handleGetUpdates();
+
+        $this->printResponse($response);
+
+        $this->stdout("OK\n");
     }
 }
