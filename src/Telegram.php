@@ -251,23 +251,20 @@ class Telegram extends Component
 
                     $commandClass = $ns . $class;
                     if ($this->validateCommandClass($commandClass)) {
-                        $dir = ltrim(pathinfo($relativePath, PATHINFO_DIRNAME), '\\/');
+                        $command_name = mb_strtolower($this->sanitizeCommand(substr(basename($file), 0, -11)));
 
-                        $command = Inflector::camel2id(substr(basename($file), 0, -11), '-', true);
-                        if (!empty($dir)) {
-                            $command = $dir . '/' . $command;
+                        if (array_key_exists($command_name, $commands)) {
+                            continue;
                         }
 
                         try {
-                            $commands[$command] = Yii::createObject($commandClass, ['telegram' => $this, 'update' => $this->update]);
+                            $commands[$command_name] = Yii::createObject($commandClass, ['telegram' => $this, 'update' => $this->update]);
                         } catch (InvalidConfigException $e) {
                         }
                     }
                 }
             }
         }
-
-        Yii::debug(print_r($commands, true));
 
         return $commands;
     }
