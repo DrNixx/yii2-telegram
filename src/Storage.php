@@ -157,7 +157,7 @@ class Storage
     /**
      * Fetch update(s) from DB
      *
-     * @param int $id Check for unique update id
+     * @param int|null $id Check for unique update id
      *
      * @return TelegramUpdateRepo|null Fetched data or false if not connected
      */
@@ -254,7 +254,7 @@ class Storage
      * Insert users and save their connection to chats
      *
      * @param User $user
-     * @param Chat $chat
+     * @param Chat|null $chat
      *
      * @return bool If the insert was successful
      *
@@ -630,10 +630,10 @@ class Storage
         $messageRepo->left_chat_member = $left_chat_member_id;
         $messageRepo->new_chat_title = $message->newChatTitle;
         $messageRepo->new_chat_photo = self::entitiesArrayToJson($message->newChatPhoto);
-        $messageRepo->delete_chat_photo = $message->deleteChatPhoto;
-        $messageRepo->group_chat_created = $message->groupChatCreated;
-        $messageRepo->supergroup_chat_created = $message->supergroupChatCreated;
-        $messageRepo->channel_chat_created = $message->channelChatCreated;
+        $messageRepo->delete_chat_photo = boolval($message->deleteChatPhoto);
+        $messageRepo->group_chat_created = boolval($message->groupChatCreated);
+        $messageRepo->supergroup_chat_created = boolval($message->supergroupChatCreated);
+        $messageRepo->channel_chat_created = boolval($message->channelChatCreated);
         $messageRepo->migrate_to_chat_id = $message->migrateToChatId;
         $messageRepo->migrate_from_chat_id = $message->migrateFromChatId;
         $messageRepo->pinned_message = self::entityToJson($message->pinnedMessage);

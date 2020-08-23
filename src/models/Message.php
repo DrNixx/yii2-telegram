@@ -180,6 +180,16 @@ class Message extends ActiveRecordEx
                 'string'
             ],
             [['delete_chat_photo', 'group_chat_created', 'supergroup_chat_created', 'channel_chat_created'], 'boolean'],
+            [
+                [
+                    'delete_chat_photo',
+                    'group_chat_created',
+                    'supergroup_chat_created',
+                    'channel_chat_created'
+                ],
+                'default',
+                'value' => false
+            ],
             [['new_chat_title'], 'string', 'max' => 255],
             [['chat_id', 'id'], 'unique', 'targetAttribute' => ['chat_id', 'id']],
             [
