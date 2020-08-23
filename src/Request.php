@@ -1,18 +1,19 @@
 <?php
 namespace onix\telegram;
 
+use CURLFile;
 use onix\telegram\entities\File;
 use onix\telegram\entities\inputMedia\InputMedia;
 use onix\telegram\entities\Message;
 use onix\telegram\entities\ServerResponse;
 use onix\telegram\exceptions\InvalidBotTokenException;
 use onix\telegram\exceptions\TelegramException;
-use onix\http\Curl;
 use Yii;
 use yii\base\BaseObject;
 use yii\base\Exception as BaseException;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
+use yii\httpclient\Client;
 
 /**
  * Class Request
@@ -285,7 +286,7 @@ class Request extends BaseObject
     public $api_base_uri = 'https://api.telegram.org';
 
     /**
-     * @var Curl
+     * @var Client
      */
     private $client;
 
@@ -441,9 +442,9 @@ class Request extends BaseObject
     public function init()
     {
         parent::init();
-
-        /** @noinspection PhpUndefinedFieldInspection */
-        $this->client = Yii::$app->curl;
+        $this->client = new Client([
+            'transport' => 'yii\httpclient\CurlTransport'
+        ]);
     }
 
     /**
@@ -530,7 +531,6 @@ class Request extends BaseObject
      * @param array $data
      *
      * @return array
-     * @throws TelegramException
      */
     private function setUpRequestParams(array $data)
     {
@@ -546,7 +546,7 @@ class Request extends BaseObject
             ) {
                 // Allow absolute paths to local files.
                 if (is_string($item) && file_exists($item)) {
-                    $item = new Stream(self::encodeFile($item));
+                    $item = new CURLFile($item);
                 }
             } elseif (is_array($item) || is_object($item)) {
                 // Convert any nested arrays or objects into JSON strings.
@@ -554,7 +554,7 @@ class Request extends BaseObject
             }
 
             // Reformat data array in multipart way if it contains a resource
-            $has_resource = $has_resource || is_resource($item) || $item instanceof Stream;
+            $has_resource = $has_resource || $item instanceof CURLFile;
             $multipart[]  = ['name' => $key, 'contents' => $item];
         }
         unset($item);
@@ -599,7 +599,6 @@ class Request extends BaseObject
      * @param array $multipart
      *
      * @return mixed
-     * @throws TelegramException
      */
     private function mediaInputHelper($item, &$has_resource, array &$multipart)
     {
@@ -620,16 +619,16 @@ class Request extends BaseObject
             foreach ($possible_medias as $type => $media) {
                 // Allow absolute paths to local files.
                 if (is_string($media) && file_exists($media)) {
-                    $media = new Stream(self::encodeFile($media));
+                    $media = new CURLFile($media);
                 }
 
-                if (is_resource($media) || $media instanceof Stream) {
+                if ($media instanceof CURLFile) {
                     $has_resource = true;
-                    $unique_key   = uniqid($type . '_', false);
-                    $multipart[]  = ['name' => $unique_key, 'contents' => $media];
+                    $unique_key = uniqid($type . '_', false);
+                    $multipart[] = ['name' => $unique_key, 'contents' => $media];
 
                     // We're literally overwriting the passed media type data!
-                    $media_item->$type           = 'attach://' . $unique_key;
+                    $media_item->$type = 'attach://' . $unique_key;
                 }
             }
         }
@@ -656,7 +655,6 @@ class Request extends BaseObject
      * @param array  $data   Data to attach to the execution
      *
      * @return string Result of the HTTP Request
-     * @throws TelegramException
      */
     public function execute($action, array $data = [])
     {
@@ -664,8 +662,15 @@ class Request extends BaseObject
         $request_params = $this->setUpRequestParams($data);
 
         try {
-            $this->client->setOption(CURLOPT_POSTFIELDS, $request_params);
-            $result = $this->client->post("{$this->api_base_uri}/bot{$this->telegram->apiKey}/{$action}", true);
+            $response = $this->client->createRequest()
+                ->setFormat(Client::FORMAT_CURL)
+                ->setMethod('post')
+                ->setUrl("{$this->api_base_uri}/bot{$this->telegram->apiKey}/{$action}")
+                ->setData($request_params)
+                ->send();
+            if ($response->isOk) {
+                $result = $response->data;
+            }
 
             //Logging getUpdates Update
             if ($action === 'getUpdates') {
@@ -697,7 +702,7 @@ class Request extends BaseObject
         }
 
         $tg_file_path = $file->filePath;
-        $file_path= $download_path . '/' . $tg_file_path;
+        $file_path = $download_path . '/' . $tg_file_path;
 
         $file_dir = dirname($file_path);
         //For safety reasons, first try to create the directory, then check that it exists.
@@ -708,36 +713,18 @@ class Request extends BaseObject
 
         try {
             $fp = fopen($file_path, 'w+');
-            $this->client->returnTransfer = false;
-            $this->client->setOption(CURLOPT_FILE, $fp);
-            $this->client->setOption(CURLOPT_FOLLOWLOCATION, true);
-            $this->client->get("{$this->api_base_uri}/bot{$this->telegram->apiKey}/{$tg_file_path}", true);
-            fclose($fp);
+            $response = $this->client->createRequest()
+                ->setMethod('GET')
+                ->setUrl("{$this->api_base_uri}/bot{$this->telegram->apiKey}/{$tg_file_path}")
+                ->setOutputFile($fp)
+                ->send();
 
-            return filesize($file_path) > 0;
+            @fclose($fp);
+
+            return $response->isOk && (filesize($file_path) > 0);
         } catch (BaseException $e) {
             return false;
-        } finally {
-            $this->client->returnTransfer = true;
         }
-    }
-
-    /**
-     * Encode file
-     *
-     * @param string $file
-     *
-     * @return resource
-     * @throws TelegramException
-     */
-    public static function encodeFile($file)
-    {
-        $fp = fopen($file, 'rb');
-        if ($fp === false) {
-            throw new TelegramException('Cannot open "' . $file . '" for reading');
-        }
-
-        return $fp;
     }
 
     /**

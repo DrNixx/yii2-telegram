@@ -21,8 +21,10 @@
         "ext-curl": "*",
 
         "yiisoft/yii2": "~2.0.0",
+        "yiisoft/yii2-httpclient": "~2.0.0",
 
-        "drnixx/yii2-onix": "^1.14"
+        "drnixx/yii2-onix": "^1.14",
+        "guzzlehttp/guzzle": "^7.0"
     },
     "require-dev": {
         "yiisoft/yii2-faker": "~2.0.0",

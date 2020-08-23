@@ -187,8 +187,8 @@ abstract class Command extends BaseObject
      *
      * @return ServerResponse
      *
-     * @throws TelegramException
      * @throws BaseException
+     * @throws TelegramException
      */
     public function preExecute()
     {

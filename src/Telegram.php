@@ -1,6 +1,7 @@
 <?php
 namespace onix\telegram;
 
+use CURLFile;
 use onix\telegram\commands\Command;
 use onix\telegram\entities\ServerResponse;
 use onix\telegram\entities\Update;
@@ -14,6 +15,7 @@ use ReflectionException;
 use RegexIterator;
 use Yii;
 use yii\base\Component;
+use yii\base\Exception as BaseException;
 use yii\base\InvalidConfigException;
 use yii\helpers\Inflector;
 use yii\helpers\Json;
@@ -339,7 +341,7 @@ class Telegram extends Component
      * @return ServerResponse
      *
      * @throws TelegramException
-     * @throws \yii\base\Exception
+     * @throws BaseException
      */
     public function handleGetUpdates($limit = null, $timeout = null)
     {
@@ -390,7 +392,7 @@ class Telegram extends Component
      * @return bool
      *
      * @throws TelegramException
-     * @throws \yii\base\Exception
+     * @throws BaseException
      */
     public function handle()
     {
@@ -436,7 +438,7 @@ class Telegram extends Component
      * @return ServerResponse
      *
      * @throws TelegramException
-     * @throws \yii\base\Exception
+     * @throws BaseException
      */
     public function processUpdate(Update $update)
     {
@@ -505,7 +507,7 @@ class Telegram extends Component
      * @return ServerResponse
      *
      * @throws TelegramException
-     * @throws InvalidConfigException
+     * @throws BaseException
      */
     public function executeCommand($command)
     {
@@ -814,7 +816,7 @@ class Telegram extends Component
 
         // If the certificate is passed as a path, encode and add the file to the data array.
         if (!empty($data['certificate']) && is_string($data['certificate'])) {
-            $data['certificate'] = $this->requestInstance->encodeFile($data['certificate']);
+            $data['certificate'] = new CURLFile($data['certificate']);
         }
 
         $result = $this->requestInstance->setWebhook($data);
@@ -894,8 +896,8 @@ class Telegram extends Component
      *
      * @param array $commands
      *
+     * @throws BaseException
      * @throws TelegramException
-     * @throws InvalidConfigException
      */
     public function runCommands($commands)
     {

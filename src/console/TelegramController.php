@@ -3,6 +3,7 @@ namespace onix\telegram\console;
 
 use onix\telegram\Telegram;
 use yii\console\Controller;
+use yii\helpers\Json;
 
 /**
  * Manage Telegram bot
@@ -20,6 +21,6 @@ class TelegramController extends Controller
 
         $webhookinfo = $tg->request->getWebhookInfo();
 
-        $this->stdout(print_r(($webhookinfo->result ?: $webhookinfo->printError(true)), true));
+        $this->stdout(Json::encode(($webhookinfo->result ?: $webhookinfo->printError(true)), JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
     }
 }
