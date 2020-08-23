@@ -223,7 +223,25 @@ class Storage
         ) {
             throw new TelegramException('All update fields is null');
         }
-        
+
+        $data = [
+            'id' => $update_id,
+            'chat_id' => $chat_id,
+            'message_id' => $message_id,
+            'edited_message_id' => $edited_message_id,
+            'channel_post_id' => $channel_post_id,
+            'edited_channel_post_id' => $edited_channel_post_id,
+            'inline_query_id' => $inline_query_id,
+            'chosen_inline_result_id' => $chosen_inline_result_id,
+            'callback_query_id' => $callback_query_id,
+            'shipping_query_id' => $shipping_query_id,
+            'pre_checkout_query_id' => $pre_checkout_query_id,
+            'poll_id' => $poll_id,
+            'poll_answer_poll_id' => $poll_answer_poll_id
+        ];
+
+        Yii::debug(['Try insert', $data], 'telegram');
+
         $update = new TelegramUpdateRepo([
             'id' => $update_id,
             'chat_id' => $chat_id,
@@ -242,7 +260,7 @@ class Storage
 
         $result = $update->save();
         if (!$result) {
-            Yii::warning(['Insert updates error', $update->errors], 'telegram');
+            Yii::warning(['Insert updates error', $update], 'telegram');
         }
 
         return $result;
