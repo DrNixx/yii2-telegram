@@ -466,11 +466,7 @@ class Request extends BaseObject
      */
     public function getInput()
     {
-        // First check if a custom input has been set, else get the PHP input.
-        $input = $this->telegram->getCustomInput();
-        if (empty($input)) {
-            $input = file_get_contents('php://input');
-        }
+        $input = file_get_contents('php://input');
 
         // Make sure we have a string to work with.
         if (!is_string($input)) {

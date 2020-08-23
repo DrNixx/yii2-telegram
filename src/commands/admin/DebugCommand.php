@@ -5,6 +5,7 @@ use onix\telegram\commands\AdminCommand;
 use onix\telegram\exceptions\TelegramException;
 use Exception;
 use Yii;
+use yii\base\Exception as BaseException;
 use yii\helpers\Json;
 
 /**
@@ -36,7 +37,9 @@ class DebugCommand extends AdminCommand
      * Command execute method
      *
      * @return mixed
+     *
      * @throws TelegramException
+     * @throws BaseException
      */
     public function execute()
     {
@@ -114,7 +117,7 @@ class DebugCommand extends AdminCommand
         }
 
         $data['parse_mode'] = 'Markdown';
-        $data['text']       = implode(PHP_EOL, $debug_info);
+        $data['text'] = implode(PHP_EOL, $debug_info);
 
         return $this->request->sendMessage($data);
     }

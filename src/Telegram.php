@@ -58,13 +58,6 @@ class Telegram extends Component
     protected $bot_id = '';
 
     /**
-     * Raw request data (json) for webhook methods
-     *
-     * @var string
-     */
-    protected $input;
-
-    /**
      * Custom commands objects
      *
      * @var Command[]
@@ -299,30 +292,6 @@ class Telegram extends Component
     }
 
     /**
-     * Set custom input string for debug purposes
-     *
-     * @param string $input (json format)
-     *
-     * @return Telegram
-     */
-    public function setCustomInput($input)
-    {
-        $this->input = $input;
-
-        return $this;
-    }
-
-    /**
-     * Get custom input string for debug purposes
-     *
-     * @return string
-     */
-    public function getCustomInput()
-    {
-        return $this->input;
-    }
-
-    /**
      * Get the ServerResponse of the last Command execution
      *
      * @return ServerResponse
@@ -335,15 +304,16 @@ class Telegram extends Component
     /**
      * Handle getUpdates method
      *
+     * @param mixed $input
      * @param int|null $limit
      * @param int|null $timeout
      *
      * @return ServerResponse
      *
-     * @throws TelegramException
      * @throws BaseException
+     * @throws TelegramException
      */
-    public function handleGetUpdates($limit = null, $timeout = null)
+    public function handleGetUpdates($input = null, $limit = null, $timeout = null)
     {
         if (empty($this->bot_username)) {
             throw new TelegramException('Bot Username is not defined!');
@@ -352,8 +322,8 @@ class Telegram extends Component
         $offset = 0;
 
         //Take custom input into account.
-        if ($custom_input = $this->getCustomInput()) {
-            $response = new ServerResponse(Json::decode($custom_input, true));
+        if (!empty($input)) {
+            $response = new ServerResponse($input);
         } else {
             $last_update = Storage::telegramUpdateSelect();
             if ($last_update !== null) {
@@ -389,24 +359,24 @@ class Telegram extends Component
     /**
      * Handle bot request from webhook
      *
+     * @param string $input
+     *
      * @return bool
      *
-     * @throws TelegramException
      * @throws BaseException
+     * @throws TelegramException
      */
-    public function handle()
+    public function handle($input)
     {
         if (empty($this->bot_username)) {
             throw new TelegramException('Bot Username is not defined!');
         }
 
-        $this->input = $this->requestInstance->getInput();
-
-        if (empty($this->input)) {
+        if (empty($input)) {
             throw new TelegramException('Input is empty!');
         }
 
-        $post = Json::decode($this->input, true);
+        $post = Json::decode($input, true);
         if (empty($post)) {
             throw new TelegramException('Invalid JSON!');
         }
@@ -799,6 +769,7 @@ class Telegram extends Component
      * @param array  $data Optional parameters.
      *
      * @return ServerResponse
+     *
      * @throws TelegramException
      */
     public function setWebhook($url, array $data = [])
@@ -807,7 +778,7 @@ class Telegram extends Component
             throw new TelegramException('Hook url is empty!');
         }
 
-        $data        = array_intersect_key($data, array_flip([
+        $data = array_intersect_key($data, array_flip([
             'certificate',
             'max_connections',
             'allowed_updates',
@@ -833,7 +804,8 @@ class Telegram extends Component
     /**
      * Delete any assigned webhook
      *
-     * @return mixed
+     * @return ServerResponse
+     *
      * @throws TelegramException
      */
     public function deleteWebhook()
