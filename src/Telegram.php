@@ -302,7 +302,7 @@ class Telegram extends Component
      * @param int|null $limit
      * @param int|null $timeout
      *
-     * @return Update[]
+     * @return ServerResponse
      *
      * @throws BaseException
      * @throws TelegramException

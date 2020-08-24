@@ -20,8 +20,25 @@ class TelegramController extends Controller
      */
     private function printResponse($response)
     {
-        $this->stdout(Json::encode(($response->result ?: $response->printError(true)), JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+        isset($response->result) ? $this->printData($response) : $this->printError($response);
+
         $this->stdout("\n");
+    }
+
+    /**
+     * @param ServerResponse $response
+     */
+    private function printData($response)
+    {
+        $this->stdout(Json::encode($response->result, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+    }
+
+    /**
+     * @param ServerResponse $response
+     */
+    private function printError($response)
+    {
+        $this->stderr("Error occured: ".Json::encode($response->printError(true), JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
     }
 
     /**
@@ -115,8 +132,13 @@ class TelegramController extends Controller
         $tg->enableLimiter();
         $response = $tg->handleGetUpdates();
 
-        $count = count($response);
+        if (isset($response->result)) {
+            $count = count($response->result);
+            $this->stdout("{$count} updates proccessed\n");
+        } else {
+            $this->printError($response);
+        }
 
-        $this->stdout("{$count} updates proccessed\n");
+        $this->stdout("\n");
     }
 }
