@@ -8,6 +8,7 @@ use yii\base\Exception as BaseException;
 use yii\filters\AccessControl;
 use yii\validators\IpValidator;
 use yii\web\Controller;
+use yii\web\ForbiddenHttpException;
 
 class TelegramController extends Controller
 {
@@ -32,6 +33,9 @@ class TelegramController extends Controller
                         }
                     ],
                 ],
+                'denyCallback' => function ($rule, $action) {
+                    throw new ForbiddenHttpException();
+                }
             ],
         ];
     }
