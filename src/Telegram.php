@@ -252,10 +252,6 @@ class Telegram extends Component
                     if ($this->validateCommandClass($commandClass)) {
                         $command_name = mb_strtolower($this->sanitizeCommand(substr(basename($file), 0, -11)));
 
-                        if (array_key_exists($command_name, $commands)) {
-                            continue;
-                        }
-
                         try {
                             $commands[$command_name] = Yii::createObject($commandClass, ['telegram' => $this, 'update' => $this->update]);
                         } catch (InvalidConfigException $e) {
@@ -306,7 +302,7 @@ class Telegram extends Component
      * @param int|null $limit
      * @param int|null $timeout
      *
-     * @return ServerResponse
+     * @return Update[]
      *
      * @throws BaseException
      * @throws TelegramException

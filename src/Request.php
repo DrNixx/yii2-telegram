@@ -6,6 +6,7 @@ use onix\telegram\entities\File;
 use onix\telegram\entities\inputMedia\InputMedia;
 use onix\telegram\entities\Message;
 use onix\telegram\entities\ServerResponse;
+use onix\telegram\entities\Update;
 use onix\telegram\exceptions\InvalidBotTokenException;
 use onix\telegram\exceptions\TelegramException;
 use Yii;
@@ -18,7 +19,7 @@ use yii\httpclient\Client;
 /**
  * Class Request
  *
- * @method ServerResponse getUpdates(array $data) Use this method to receive incoming updates using
+ * @method Update[] getUpdates(array $data) Use this method to receive incoming updates using
  * long polling (wiki). An Array of Update objects is returned.
  *
  * @method ServerResponse setWebhook(array $data) Use this method to specify a url and receive incoming

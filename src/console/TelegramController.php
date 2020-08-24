@@ -21,6 +21,7 @@ class TelegramController extends Controller
     private function printResponse($response)
     {
         $this->stdout(Json::encode(($response->result ?: $response->printError(true)), JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+        $this->stdout("\n");
     }
 
     /**
@@ -111,11 +112,11 @@ class TelegramController extends Controller
         /** @var Telegram $tg */
         /** @noinspection PhpUndefinedFieldInspection */
         $tg = \Yii::$app->telegram;
-
+        $tg->enableLimiter();
         $response = $tg->handleGetUpdates();
 
-        $this->printResponse($response);
+        $count = count($response);
 
-        $this->stdout("OK\n");
+        $this->stdout("{$count} updates proccessed\n");
     }
 }
