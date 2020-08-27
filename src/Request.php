@@ -694,12 +694,12 @@ class Request extends BaseObject
      */
     public function downloadFile(File $file)
     {
-        if (empty($this->download_path)) {
+        if (empty($this->telegram->downloadPath)) {
             throw new TelegramException('Download path not set!');
         }
 
         $tg_file_path = $file->filePath;
-        $file_path = Yii::getAlias("{$this->download_path}/{$tg_file_path}");
+        $file_path = Yii::getAlias("{$this->telegram->downloadPath}/{$tg_file_path}");
 
         $file_dir = dirname($file_path);
         //For safety reasons, first try to create the directory, then check that it exists.
