@@ -22,4 +22,9 @@ class GenericCommand extends SystemCommand
      * @var string
      */
     protected $version = '1.1.0';
+
+    /**
+     * @inheritdoc
+     */
+    protected $show_in_help = false;
 }

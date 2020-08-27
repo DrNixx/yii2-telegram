@@ -1,33 +1,38 @@
 <?php
-namespace onix\telegram\commands\user;
+namespace onix\telegram\commands\system;
 
-use onix\telegram\commands\UserCommand;
+use onix\telegram\commands\SystemCommand;
 use onix\telegram\entities\ServerResponse;
 
 /**
  * Start command
  */
-class StartCommand extends UserCommand
+class StartCommand extends SystemCommand
 {
     /**
-     * @var string
+     * @inheritdoc
      */
     protected $name = 'start';
 
     /**
-     * @var string
+     * @inheritdoc
      */
     protected $description = 'Start command';
 
     /**
-     * @var string
+     * @inheritdoc
      */
     protected $usage = '/start';
 
     /**
-     * @var string
+     * @inheritdoc
      */
     protected $version = '1.2.0';
+
+    /**
+     * @inheritdoc
+     */
+    protected $show_in_help = false;
 
     /**
      * Command execute method

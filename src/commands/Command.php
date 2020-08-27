@@ -47,6 +47,7 @@ use yii\base\UnknownPropertyException;
  * @property-read Telegram $telegram
  *
  * @property-read string $name Command name
+ * @property-read string $category Command category
  * @property-read string $description Command description
  * @property-read string $version Command version
  * @property-read array $config Command config
@@ -74,6 +75,13 @@ abstract class Command extends BaseObject
      * @var string
      */
     protected $name = '';
+
+    /**
+     * Category
+     *
+     * @var string
+     */
+    protected $category = '';
 
     /**
      * Description
@@ -286,7 +294,7 @@ abstract class Command extends BaseObject
      */
     public function getUsage()
     {
-        return $this->usage;
+        return Yii::t('telegram', $this->usage);
     }
 
     /**
@@ -300,13 +308,23 @@ abstract class Command extends BaseObject
     }
 
     /**
+     * Get category
+     *
+     * @return string
+     */
+    public function getCategory()
+    {
+        return Yii::t('telegram', $this->category);
+    }
+
+    /**
      * Get description
      *
      * @return string
      */
     public function getDescription()
     {
-        return $this->description;
+        return Yii::t('telegram', $this->description);
     }
 
     /**

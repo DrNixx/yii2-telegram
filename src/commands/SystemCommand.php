@@ -15,11 +15,16 @@ abstract class SystemCommand extends Command
     public static $execute_deprecated = false;
 
     /**
-     * @{inheritdoc}
+     * @inheritdoc
      *
      * Set to empty string to disallow users calling system commands.
      */
     protected $usage = '';
+
+    /**
+     * @inheritdoc
+     */
+    protected $category = 'System';
 
     /**
      * A system command just executes

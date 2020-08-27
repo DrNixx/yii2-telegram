@@ -24,6 +24,11 @@ class InlinequeryCommand extends SystemCommand
     protected $version = '1.0.1';
 
     /**
+     * @inheritdoc
+     */
+    protected $show_in_help = false;
+
+    /**
      * Command execute method
      *
      * @return mixed

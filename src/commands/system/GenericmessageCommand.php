@@ -28,6 +28,11 @@ class GenericmessageCommand extends SystemCommand
     protected $version = '1.2.0';
 
     /**
+     * @inheritdoc
+     */
+    protected $show_in_help = false;
+
+    /**
      * Execute command
      *
      * @return ServerResponse
