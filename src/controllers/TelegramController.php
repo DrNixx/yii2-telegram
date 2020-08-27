@@ -4,9 +4,11 @@ namespace onix\telegram\controllers;
 use onix\telegram\exceptions\TelegramException;
 use onix\telegram\Telegram;
 use Yii;
+use yii\base\Action;
 use yii\base\Exception as BaseException;
 use yii\filters\AccessControl;
 use yii\validators\IpValidator;
+use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\web\ForbiddenHttpException;
 
@@ -38,6 +40,17 @@ class TelegramController extends Controller
                 }
             ],
         ];
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @throws BadRequestHttpException
+     */
+    public function beforeAction($action)
+    {
+        $this->enableCsrfValidation = false;
+        return parent::beforeAction($action);
     }
 
     /**
