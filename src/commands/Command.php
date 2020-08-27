@@ -46,6 +46,7 @@ use yii\base\UnknownPropertyException;
  *
  * @property-read Telegram $telegram
  *
+ * @property-read string $i18nCategory Category for message translator
  * @property-read string $name Command name
  * @property-read string $category Command category
  * @property-read string $description Command description
@@ -287,7 +288,12 @@ abstract class Command extends BaseObject
         return null;
     }
 
-    private function getTranslationCategory()
+    /**
+     * Get category for message translator
+     *
+     * @return string
+     */
+    protected function getI18nCategory()
     {
         $key = 'telegram_cmd';
         if (!empty($this->category)) {
@@ -304,7 +310,7 @@ abstract class Command extends BaseObject
      */
     public function getUsage()
     {
-        return Yii::t($this->getTranslationCategory(), $this->usage);
+        return Yii::t($this->getI18nCategory(), $this->usage);
     }
 
     /**
@@ -324,7 +330,7 @@ abstract class Command extends BaseObject
      */
     public function getCategory()
     {
-        return Yii::t($this->getTranslationCategory(), $this->category);
+        return Yii::t($this->getI18nCategory(), $this->category);
     }
 
     /**
@@ -334,7 +340,7 @@ abstract class Command extends BaseObject
      */
     public function getDescription()
     {
-        return Yii::t($this->getTranslationCategory(), $this->description);
+        return Yii::t($this->getI18nCategory(), $this->description);
     }
 
     /**
