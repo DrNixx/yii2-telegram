@@ -228,24 +228,8 @@ abstract class Command extends BaseObject
     abstract public function execute();
 
     /**
-     * Relay any non-existing function calls to Update object.
-     *
-     * This is purely a helper method to make requests from within execute() method easier.
-     *
-     * @param string $name
-     * @param array  $params
-     *
-     * @return Command
+     * @inheritDoc
      */
-    public function __call($name, $params)
-    {
-        if ($this->update === null) {
-            return null;
-        }
-
-        return call_user_func_array([$this->update, $name], $params);
-    }
-
     public function __get($name)
     {
         try {
@@ -256,6 +240,20 @@ abstract class Command extends BaseObject
             }
 
             return $this->update->$name;
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __set($name, $value)
+    {
+        try {
+            parent::__set($name, $value);
+        } catch (UnknownPropertyException $e) {
+            if ($this->update !== null) {
+                $this->update->$name = $value;
+            }
         }
     }
 
