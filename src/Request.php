@@ -759,7 +759,7 @@ class Request extends BaseObject
         $raw_response = $this->execute($action, $data);
 
         if (null === $raw_response) {
-            Yii::debug($raw_response);
+            Yii::debug($raw_response, 'telegram');
             throw new TelegramException('Telegram returned an invalid response!');
         }
 

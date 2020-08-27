@@ -254,6 +254,7 @@ class Telegram extends Component
 
                         try {
                             $commands[$command_name] = Yii::createObject($commandClass, ['telegram' => $this, 'update' => $this->update]);
+                            Yii::debug(['add command', $commandClass], 'telegram');
                         } catch (InvalidConfigException $e) {
                         }
                     }
