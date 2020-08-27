@@ -287,6 +287,16 @@ abstract class Command extends BaseObject
         return null;
     }
 
+    private function getTranslationCategory()
+    {
+        $key = 'telegram_cmd';
+        if (!empty($this->category)) {
+            $key .= '_' . strtolower($this->category);
+        }
+
+        return $key;
+    }
+
     /**
      * Get usage
      *
@@ -294,7 +304,7 @@ abstract class Command extends BaseObject
      */
     public function getUsage()
     {
-        return Yii::t('telegram', $this->usage);
+        return Yii::t($this->getTranslationCategory(), $this->usage);
     }
 
     /**
@@ -314,7 +324,7 @@ abstract class Command extends BaseObject
      */
     public function getCategory()
     {
-        return Yii::t('telegram', $this->category);
+        return Yii::t($this->getTranslationCategory(), $this->category);
     }
 
     /**
@@ -324,7 +334,7 @@ abstract class Command extends BaseObject
      */
     public function getDescription()
     {
-        return Yii::t('telegram', $this->description);
+        return Yii::t($this->getTranslationCategory(), $this->description);
     }
 
     /**
@@ -424,6 +434,15 @@ abstract class Command extends BaseObject
     }
 
     /**
+     * Set response language
+     *
+     * @param Message $message
+     */
+    protected function setReplyLanguage(Message $message)
+    {
+    }
+
+    /**
      * Helper to reply to a chat directly.
      *
      * @param string $text
@@ -434,13 +453,14 @@ abstract class Command extends BaseObject
      * @throws TelegramException
      * @throws BaseException
      */
-    public function replyToChat($text, array $data = [])
+    public function replyToChat(string $text, array $data = [])
     {
         if ($message = $this->message ?:
             $this->editedMessage ?:
             $this->channelPost ?:
             $this->editedChannelPost
         ) {
+            $this->setReplyLanguage($message);
             return $this->request->sendMessage(array_merge([
                 'chat_id' => $message->chat->id,
                 'text' => $text,
@@ -461,9 +481,10 @@ abstract class Command extends BaseObject
      * @throws TelegramException
      * @throws BaseException
      */
-    public function replyToUser($text, array $data = [])
+    public function replyToUser(string $text, array $data = [])
     {
         if ($message = $this->message ?: $this->editedMessage) {
+            $this->setReplyLanguage($message);
             return $this->request->sendMessage(array_merge([
                 'chat_id' => $message->from->id,
                 'text' => $text,
