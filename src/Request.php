@@ -592,12 +592,12 @@ class Request extends BaseObject
      * ]);
      *
      * @param mixed $item
-     * @param bool  $has_resource
+     * @param bool $has_resource
      * @param array $multipart
      *
      * @return mixed
      */
-    private function mediaInputHelper($item, &$has_resource, array &$multipart)
+    private function mediaInputHelper($item, bool &$has_resource, array &$multipart)
     {
         $was_array = is_array($item);
         $was_array || $item = [$item];
@@ -649,11 +649,11 @@ class Request extends BaseObject
      * Execute HTTP Request
      *
      * @param string $action Action to execute
-     * @param array  $data   Data to attach to the execution
+     * @param array $data Data to attach to the execution
      *
      * @return mixed Result of the HTTP Request
      */
-    protected function execute($action, array $data = [])
+    protected function execute(string $action, array $data = [])
     {
         $result = null;
         $request_params = $this->setUpRequestParams($data);
@@ -694,12 +694,12 @@ class Request extends BaseObject
      */
     public function downloadFile(File $file)
     {
-        if (empty($download_path = $this->telegram->getDownloadPath())) {
+        if (empty($this->download_path)) {
             throw new TelegramException('Download path not set!');
         }
 
         $tg_file_path = $file->filePath;
-        $file_path = $download_path . '/' . $tg_file_path;
+        $file_path = Yii::getAlias("{$this->download_path}/{$tg_file_path}");
 
         $file_dir = dirname($file_path);
         //For safety reasons, first try to create the directory, then check that it exists.
@@ -738,7 +738,7 @@ class Request extends BaseObject
      * @throws TelegramException
      * @throws BaseException
      */
-    public function send($action, array $data = [])
+    public function send(string $action, array $data = [])
     {
         $this->ensureValidAction($action);
         $this->addDummyParamIfNecessary($action, $data);
@@ -791,12 +791,12 @@ class Request extends BaseObject
      * If a method doesn't require parameters, we need to add a dummy one anyway,
      * because of some cURL version failed POST request without parameters.
      *
+     * @param string $action
+     * @param array $data
      * @todo Would be nice to find a better solution for this!
      *
-     * @param string $action
-     * @param array  $data
      */
-    protected function addDummyParamIfNecessary($action, array &$data)
+    protected function addDummyParamIfNecessary(string $action, array &$data)
     {
         if (in_array($action, $this->actions_need_dummy_param, true)) {
             // Can be anything, using a single letter to minimise request size.
@@ -825,7 +825,7 @@ class Request extends BaseObject
      *
      * @throws TelegramException
      */
-    private function ensureValidAction($action)
+    private function ensureValidAction(string $action)
     {
         if (!in_array($action, $this->actions, true)) {
             throw new TelegramException('The action "' . $action . '" doesn\'t exist!');
@@ -867,6 +867,8 @@ class Request extends BaseObject
      * @param array  $data
      *
      * @return ServerResponse
+     *
+     * @noinspection PhpMissingParamTypeInspection
      */
     public function __call($action, $data)
     {
@@ -903,7 +905,7 @@ class Request extends BaseObject
      * @throws BaseException
      */
     public function sendToActiveChats(
-        $callback_function,
+        string $callback_function,
         array $data,
         array $select_chats_params
     ) {
@@ -958,7 +960,7 @@ class Request extends BaseObject
      * @throws TelegramException
      * @throws BaseException
      */
-    private function limitTelegramRequests($action, array $data = [])
+    private function limitTelegramRequests(string $action, array $data = [])
     {
         if ($this->limiter_enabled) {
             $limited_methods = [

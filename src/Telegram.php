@@ -75,14 +75,14 @@ class Telegram extends Component
      *
      * @var string
      */
-    protected $upload_path;
+    public $uploadPath = '@app/runtime/telegram/upload';
 
     /**
      * Download path
      *
      * @var string
      */
-    protected $download_path;
+    public $downloadPath = '@app/runtime/telegram/download';
 
     /**
      * Commands config
@@ -639,54 +639,6 @@ class Telegram extends Component
     public function getCommandsNamespaces()
     {
         return $this->commandsNamespaces;
-    }
-
-    /**
-     * Set custom upload path
-     *
-     * @param string $path Custom upload path
-     *
-     * @return Telegram
-     */
-    public function setUploadPath(string $path)
-    {
-        $this->upload_path = $path;
-
-        return $this;
-    }
-
-    /**
-     * Get custom upload path
-     *
-     * @return string
-     */
-    public function getUploadPath()
-    {
-        return $this->upload_path;
-    }
-
-    /**
-     * Set custom download path
-     *
-     * @param string $path Custom download path
-     *
-     * @return Telegram
-     */
-    public function setDownloadPath(string $path)
-    {
-        $this->download_path = $path;
-
-        return $this;
-    }
-
-    /**
-     * Get custom download path
-     *
-     * @return string
-     */
-    public function getDownloadPath()
-    {
-        return $this->download_path;
     }
 
     /**
