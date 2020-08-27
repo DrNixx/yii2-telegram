@@ -155,9 +155,9 @@ abstract class Command extends BaseObject
     }
 
     /**
-     * @param Telegram $value;
+     * @param Telegram $value
      */
-    public function setTelegram($value)
+    public function setTelegram(Telegram $value)
     {
         $this->telegram = $value;
     }

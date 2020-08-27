@@ -272,7 +272,7 @@ class Telegram extends Component
      *
      * @return Command|null
      */
-    public function getCommandObject($command)
+    public function getCommandObject(string $command)
     {
         if (isset($this->commands_objects[$command])) {
             return $this->commands_objects[$command];
@@ -361,7 +361,7 @@ class Telegram extends Component
      * @throws BaseException
      * @throws TelegramException
      */
-    public function handle($input)
+    public function handle(string $input)
     {
         if (empty($this->bot_username)) {
             throw new TelegramException('Bot Username is not defined!');
@@ -390,7 +390,7 @@ class Telegram extends Component
      *
      * @return string
      */
-    protected function getCommandFromType($type)
+    protected function getCommandFromType(string $type)
     {
         return $this->ucfirstUnicode(str_replace('_', '', $type));
     }
@@ -473,7 +473,7 @@ class Telegram extends Component
      * @throws TelegramException
      * @throws BaseException
      */
-    public function executeCommand($command)
+    public function executeCommand(string $command)
     {
         $command = mb_strtolower($command);
 
@@ -492,8 +492,9 @@ class Telegram extends Component
             //Handle a generic command or non existing one
             $this->last_command_response = $this->executeCommand(self::GENERIC_COMMAND);
         } else {
-            //execute() method is executed after preExecute()
-            //This is to prevent executing a DB query without a valid connection
+            // execute() method is executed after preExecute()
+            // This is to prevent executing a DB query without a valid connection
+            $command_obj->setUpdate($this->update);
             $this->last_command_response = $command_obj->preExecute();
         }
 
@@ -507,7 +508,7 @@ class Telegram extends Component
      *
      * @return string
      */
-    protected function sanitizeCommand($command)
+    protected function sanitizeCommand(string $command)
     {
         return str_replace(' ', '', $this->ucwordsUnicode(str_replace('_', ' ', $command)));
     }
@@ -515,13 +516,14 @@ class Telegram extends Component
     /**
      * Enable a single Admin account
      *
-     * @param integer $admin_id Single admin id
+     * @param integer|string $admin_id Single admin id
      *
      * @return Telegram
      */
     public function enableAdmin($admin_id)
     {
-        if (!is_int($admin_id) || $admin_id <= 0) {
+        $admin_id = intval($admin_id);
+        if ($admin_id <= 0) {
             Yii::error('Invalid value "' . $admin_id . '" for admin.', 'telegram');
         } elseif (!in_array($admin_id, $this->admins, true)) {
             $this->admins[] = $admin_id;
@@ -595,11 +597,11 @@ class Telegram extends Component
      * Add a single custom commands namespace
      *
      * @param string $ns Custom commands namespace to add
-     * @param bool   $before If the path should be prepended or appended to the list
+     * @param bool $before If the path should be prepended or appended to the list
      *
      * @return Telegram
      */
-    public function addCommandsNamespace($ns, $before = true)
+    public function addCommandsNamespace(string $ns, $before = true)
     {
         if (!in_array($ns, $this->commandsNamespaces, true)) {
             if ($before) {
@@ -646,7 +648,7 @@ class Telegram extends Component
      *
      * @return Telegram
      */
-    public function setUploadPath($path)
+    public function setUploadPath(string $path)
     {
         $this->upload_path = $path;
 
@@ -670,7 +672,7 @@ class Telegram extends Component
      *
      * @return Telegram
      */
-    public function setDownloadPath($path)
+    public function setDownloadPath(string $path)
     {
         $this->download_path = $path;
 
@@ -695,11 +697,11 @@ class Telegram extends Component
      * Or you can add the api key for external service.
      *
      * @param string $command
-     * @param array  $config
+     * @param array $config
      *
      * @return Telegram
      */
-    public function setCommandConfig($command, array $config)
+    public function setCommandConfig(string $command, array $config)
     {
         $this->commands_config[$command] = $config;
 
@@ -713,7 +715,7 @@ class Telegram extends Component
      *
      * @return array
      */
-    public function getCommandConfig($command)
+    public function getCommandConfig(string $command)
     {
         return isset($this->commands_config[$command]) ? $this->commands_config[$command] : [];
     }
@@ -760,13 +762,13 @@ class Telegram extends Component
      * Set Webhook for bot
      *
      * @param string $url
-     * @param array  $data Optional parameters.
+     * @param array $data Optional parameters.
      *
      * @return ServerResponse
      *
      * @throws TelegramException
      */
-    public function setWebhook($url, array $data = [])
+    public function setWebhook(string $url, array $data = [])
     {
         if (empty($url)) {
             throw new TelegramException('Hook url is empty!');
@@ -823,7 +825,7 @@ class Telegram extends Component
      *
      * @return string
      */
-    protected function ucwordsUnicode($str, $encoding = 'UTF-8')
+    protected function ucwordsUnicode(string $str, $encoding = 'UTF-8')
     {
         return mb_convert_case($str, MB_CASE_TITLE, $encoding);
     }
@@ -836,7 +838,7 @@ class Telegram extends Component
      *
      * @return string
      */
-    protected function ucfirstUnicode($str, $encoding = 'UTF-8')
+    protected function ucfirstUnicode(string $str, $encoding = 'UTF-8')
     {
         return mb_strtoupper(mb_substr($str, 0, 1, $encoding), $encoding)
             . mb_strtolower(mb_substr($str, 1, mb_strlen($str), $encoding), $encoding);
@@ -865,7 +867,7 @@ class Telegram extends Component
      * @throws BaseException
      * @throws TelegramException
      */
-    public function runCommands($commands)
+    public function runCommands(array $commands)
     {
         if (!is_array($commands) || empty($commands)) {
             throw new TelegramException('No command(s) provided!');

@@ -41,11 +41,11 @@ class TelegramTest extends \Codeception\Test\Unit
 
         // Integer as a string
         $tg->enableAdmin('4');
-        $this->assertCount(3, $tg->getAdminList());
+        $this->assertCount(4, $tg->getAdminList());
 
         // Random string
         $tg->enableAdmin('a string?');
-        $this->assertCount(3, $tg->getAdminList());
+        $this->assertCount(4, $tg->getAdminList());
     }
 
     public function testGetCommandsList()
