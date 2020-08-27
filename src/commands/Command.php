@@ -118,7 +118,7 @@ abstract class Command extends BaseObject
      */
     protected $enabled = true;
 
-    /*
+   /**
     * Make sure this command only executes on a private chat.
     *
     * @var bool
