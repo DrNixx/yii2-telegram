@@ -48,6 +48,7 @@ class m200717_202527_create_telegram_tables extends Migration
 
         $this->addPrimaryKey('pk_telegram_user', "{$tablePrefix}user", ['id']);
         $this->createIndex('ix_telegram_user_username', "{$tablePrefix}user", 'username');
+        $this->createIndex('ix_telegram_user_id', "{$tablePrefix}user", 'user_id');
 
         $this->createTable("{$tablePrefix}chat", [
             'id' => $this->bigInteger()->notNull()->comment('Unique identifier for this chat'),
