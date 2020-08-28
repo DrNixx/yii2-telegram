@@ -712,7 +712,7 @@ class Request extends BaseObject
             $fp = fopen($file_path, 'w+');
             $response = $this->client->createRequest()
                 ->setMethod('GET')
-                ->setUrl("{$this->api_base_uri}/bot{$this->telegram->apiKey}/{$tg_file_path}")
+                ->setUrl("{$this->api_base_uri}/file/bot{$this->telegram->apiKey}/{$tg_file_path}")
                 ->setOutputFile($fp)
                 ->send();
 
