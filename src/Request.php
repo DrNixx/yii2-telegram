@@ -667,6 +667,8 @@ class Request extends BaseObject
                 ->send();
             if ($response->isOk) {
                 $result = $response->data;
+            } else {
+                Yii::error(['Invalid response', print_r($response, true)], 'telegram');
             }
 
             //Logging getUpdates Update
