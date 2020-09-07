@@ -18,6 +18,7 @@ use yii\base\BaseObject;
 use yii\base\Exception as BaseException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
+use yii\helpers\ArrayHelper;
 
 /**
  * Class Command
@@ -442,9 +443,9 @@ abstract class Command extends BaseObject
     /**
      * Set response language
      *
-     * @param Message $message
+     * @param Message|null $message
      */
-    protected function setReplyLanguage(Message $message)
+    protected function setReplyLanguage(?Message $message = null)
     {
     }
 
@@ -466,8 +467,7 @@ abstract class Command extends BaseObject
             $this->channelPost ?:
             $this->editedChannelPost
         ) {
-            $this->setReplyLanguage($message);
-            return $this->request->sendMessage(array_merge([
+            return $this->request->sendMessage(ArrayHelper::merge([
                 'chat_id' => $message->chat->id,
                 'text' => $text,
             ], $data));
@@ -490,8 +490,7 @@ abstract class Command extends BaseObject
     public function replyToUser(string $text, array $data = [])
     {
         if ($message = $this->message ?: $this->editedMessage) {
-            $this->setReplyLanguage($message);
-            return $this->request->sendMessage(array_merge([
+            return $this->request->sendMessage(ArrayHelper::merge([
                 'chat_id' => $message->from->id,
                 'text' => $text,
             ], $data));
