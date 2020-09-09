@@ -1,6 +1,7 @@
 <?php
 namespace onix\telegram\commands\system;
 
+use onix\telegram\commands\CallbackQueryHandler;
 use onix\telegram\commands\SystemCommand;
 use onix\telegram\entities\ServerResponse;
 
@@ -10,9 +11,9 @@ use onix\telegram\entities\ServerResponse;
 class CallbackqueryCommand extends SystemCommand
 {
     /**
-     * @var callable[]
+     * @var CallbackQueryHandler[]
      */
-    protected static $callbacks = [];
+    protected $callbacks = [];
 
     /**
      * @var string
@@ -41,29 +42,28 @@ class CallbackqueryCommand extends SystemCommand
      */
     public function execute()
     {
-        //$callback_query = $this->getCallbackQuery();
-        //$user_id        = $callback_query->getFrom()->getId();
-        //$query_id       = $callback_query->getId();
-        //$query_data     = $callback_query->getData();
-
         $answer = null;
         $callback_query = $this->callbackQuery;
 
         // Call all registered callbacks.
-        foreach (self::$callbacks as $callback) {
-            $answer = $callback($callback_query);
+        foreach ($this->callbacks as $name => $callback) {
+            $answer = $callback->callbackHandler($callback_query);
+            if ($answer instanceof ServerResponse) {
+                return $answer;
+            }
         }
 
-        return ($answer instanceof ServerResponse) ? $answer : $callback_query->answer();
+        return $callback_query->answer();
     }
 
     /**
      * Add a new callback handler for callback queries.
      *
-     * @param $callback
+     * @param string $name
+     * @param CallbackQueryHandler $callback
      */
-    public static function addCallbackHandler($callback)
+    public function addCallbackHandler(string $name, CallbackQueryHandler $callback)
     {
-        self::$callbacks[] = $callback;
+        $this->callbacks[$name] = $callback;
     }
 }

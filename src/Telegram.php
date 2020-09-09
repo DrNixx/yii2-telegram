@@ -2,7 +2,9 @@
 namespace onix\telegram;
 
 use CURLFile;
+use onix\telegram\commands\CallbackQueryHandler;
 use onix\telegram\commands\Command;
+use onix\telegram\commands\system\CallbackqueryCommand;
 use onix\telegram\entities\ServerResponse;
 use onix\telegram\entities\Update;
 use onix\telegram\exceptions\TelegramException;
@@ -258,6 +260,17 @@ class Telegram extends Component
                         } catch (InvalidConfigException $e) {
                         }
                     }
+                }
+            }
+        }
+
+        if (isset($commands['callbackquery'])) {
+            /** @var CallbackqueryCommand $callbackQueryCommand */
+            $callbackQueryCommand = $commands['callbackquery'];
+
+            foreach ($commands as $name => $command) {
+                if ($command instanceof CallbackQueryHandler) {
+                    $callbackQueryCommand->addCallbackHandler($name, $command);
                 }
             }
         }
