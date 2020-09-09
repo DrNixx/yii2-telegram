@@ -82,7 +82,7 @@ class Storage
      *
      * @return mixed
      */
-    public static function entityToJson($entity, $default = null)
+    public static function entityToJson(?Entity $entity, $default = null)
     {
         if ($entity === null) {
             return $default;
@@ -99,7 +99,7 @@ class Storage
      *
      * @return mixed
      */
-    public static function entitiesArrayToJson($entities, $default = null)
+    public static function entitiesArrayToJson(?array $entities, $default = null)
     {
         if (($entities === null) && !is_array($entities)) {
             return $default;
@@ -109,13 +109,14 @@ class Storage
     }
 
     //<editor-fold desc="*** Conversation ***">
+
     /**
      * @param int $user_id
      * @param int $chat_id
      *
      * @return ConversationRepo|null
      */
-    public static function conversationSelect($user_id, $chat_id)
+    public static function conversationSelect(int $user_id, int $chat_id)
     {
         //Select an active conversation
         return ConversationRepo::findOne([
@@ -134,7 +135,7 @@ class Storage
      *
      * @throws BaseException
      */
-    public static function conversationInsert($user_id, $chat_id, $command)
+    public static function conversationInsert(int $user_id, int $chat_id, string $command)
     {
         $conversation = new ConversationRepo([
             'user_id' => $user_id,
@@ -195,7 +196,7 @@ class Storage
      * @throws BaseException
      */
     protected static function telegramUpdateInsert(
-        $update_id,
+        string $update_id,
         $chat_id = null,
         $message_id = null,
         $edited_message_id = null,
@@ -481,7 +482,7 @@ class Storage
             $message_id = $message->messageId;
         } elseif (($edited_message = $update->editedMessage) && self::editedMessageRequestInsert($edited_message)) {
             $chat_id = $edited_message->chat->id;
-            $edited_message_id = $edited_message->edited_message_id;
+            $edited_message_id = $edited_message->editedMessageId;
         } elseif (($channel_post = $update->channelPost) && self::messageRequestInsert($channel_post)) {
             $chat_id         = $channel_post->chat->id;
             $channel_post_id = $channel_post->messageId;
@@ -489,7 +490,7 @@ class Storage
             && self::editedMessageRequestInsert($edited_channel_post)
         ) {
             $chat_id = $edited_channel_post->chat->id;
-            $edited_channel_post_id = $edited_channel_post->edited_message_id;
+            $edited_channel_post_id = $edited_channel_post->editedMessageId;
         } elseif (($inline_query = $update->inlineQuery) && self::inlineQueryRequestInsert($inline_query)) {
             $inline_query_id = $inline_query->id;
         } elseif (($chosen_inline_result = $update->chosenInlineResult) &&
@@ -708,7 +709,7 @@ class Storage
             throw new TelegramException('Edited Message save error');
         }
 
-        $edited_message->edited_message_id = $messageRepo->id;
+        $edited_message->editedMessageId = $messageRepo->id;
 
         return true;
     }
@@ -997,7 +998,7 @@ class Storage
      * @throws TelegramException
      * @throws BaseException
      */
-    public static function insertTelegramRequest($method, $data)
+    public static function insertTelegramRequest(string $method, array $data)
     {
         $chat_id = isset($data['chat_id']) ? $data['chat_id'] : null;
         $inline_message_id = isset($data['inline_message_id']) ? $data['inline_message_id'] : null;
@@ -1018,8 +1019,8 @@ class Storage
     /**
      * Get Telegram API request count for current chat / message
      *
-     * @param integer $chat_id
-     * @param string  $inline_message_id
+     * @param integer|null $chat_id
+     * @param string|null  $inline_message_id
      *
      * @return array Array containing TOTAL and CURRENT fields or false on invalid arguments
      */
