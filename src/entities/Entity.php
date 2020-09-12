@@ -370,7 +370,7 @@ abstract class Entity extends Model implements JsonSerializable
         );
     }
 
-    public function emoji($utf8emoji) {
+    public static function emoji($utf8emoji) {
         preg_replace_callback(
             '@\\\x([0-9a-fA-F]{2})@x',
             function ($captures) {
