@@ -10,6 +10,7 @@ use yii\db\ActiveQuery;
  * @property int $chat_id Unique chat identifier
  * @property int $id Unique message identifier
  * @property int $user_id Unique user identifier
+ * @property int $sender_chat_id Sender of the message, sent on behalf of a chat
  * @property string|null $date Entry date creation
  * @property int|null $forward_from Unique user identifier, sender of the original message
  * @property int|null $forward_from_chat Unique chat identifier, chat the original message belongs to
@@ -76,6 +77,18 @@ use yii\db\ActiveQuery;
  *
  * @property string|null $connected_website The domain name of the website on which the user has logged in.
  * @property string|null $passport_data Telegram Passport data
+ *
+ * @property string|null $proximity_alert_triggered Service message. A user in the chat triggered another user's
+ * proximity alert while sharing Live Location.
+ *
+ * @property string|null $message_auto_delete_timer_changed MessageAutoDeleteTimerChanged object. Message is a service
+ * message: auto-delete timer settings changed in the chat
+ *
+ * @property string|null $voice_chat_started VoiceChatStarted object. Message is a service message: voice chat started
+ * @property string|null $voice_chat_ended VoiceChatEnded object. Message is a service message: voice chat ended
+ * @property string|null $voice_chat_participants_invited VoiceChatParticipantsInvited object. Message is a service
+ * message: new participants invited to a voice chat
+ *
  * @property string|null $reply_markup Inline keyboard attached to the message
  *
  * @property CallbackQuery[] $callbackQueries
@@ -113,6 +126,7 @@ class Message extends ActiveRecordEx
                     'chat_id',
                     'id',
                     'user_id',
+                    'sender_chat_id',
                     'forward_from',
                     'forward_from_chat',
                     'forward_from_message_id',
@@ -121,7 +135,12 @@ class Message extends ActiveRecordEx
                     'via_bot',
                     'left_chat_member',
                     'migrate_to_chat_id',
-                    'migrate_from_chat_id'
+                    'migrate_from_chat_id',
+                    'proximity_alert_triggered',
+                    'message_auto_delete_timer_changed',
+                    'voice_chat_started',
+                    'voice_chat_ended',
+                    'voice_chat_participants_invited',
                 ],
                 'default',
                 'value' => null
@@ -139,7 +158,8 @@ class Message extends ActiveRecordEx
                     'via_bot',
                     'left_chat_member',
                     'migrate_to_chat_id',
-                    'migrate_from_chat_id'
+                    'migrate_from_chat_id',
+                    'sender_chat_id'
                 ],
                 'integer'
             ],
@@ -175,7 +195,12 @@ class Message extends ActiveRecordEx
                     'successful_payment',
                     'connected_website',
                     'passport_data',
-                    'reply_markup'
+                    'reply_markup',
+                    'proximity_alert_triggered',
+                    'message_auto_delete_timer_changed',
+                    'voice_chat_started',
+                    'voice_chat_ended',
+                    'voice_chat_participants_invited',
                 ],
                 'string'
             ],

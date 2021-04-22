@@ -13,6 +13,9 @@ use onix\telegram\entities\payments\SuccessfulPayment;
  *
  * @property-read int $messageId Unique message identifier
  * @property-read User $from Optional. Sender, can be empty for messages sent to channels
+ * @property-read Chat $senderChat Optional. Sender of the message, sent on behalf of a chat. The channel itself for
+ * channel messages. The supergroup itself for messages from anonymous group administrators. The linked channel
+ * for messages automatically forwarded to the discussion group
  * @property-read int $date Date the message was sent in Unix time
  * @property-read Chat $chat Conversation the message belongs to
  * @property-read User $forwardFrom Optional. For forwarded messages, sender of the original message
@@ -80,6 +83,9 @@ use onix\telegram\entities\payments\SuccessfulPayment;
  * be received in a message coming through updates, because bot can’t be a member of a channel when it is created.
  * It can only be found in reply_to_message if someone replies to a very first message in a channel.
  *
+ * @property-read MessageAutoDeleteTimerChanged $messageAutoDeleteTimerChanged Optional. Service message:
+ * auto-delete timer settings changed in the chat
+ *
  * @property-read int $migrateToChatId Optional. The group has been migrated to a supergroup with the specified
  * identifier. This number may be greater than 32 bits and some programming languages may have difficulty/silent
  * defects in interpreting it. But it smaller than 52 bits, so a signed 64 bit integer or double-precision float type
@@ -99,6 +105,13 @@ use onix\telegram\entities\payments\SuccessfulPayment;
  *
  * @property-read string $connectedWebsite Optional. The domain name of the website on which the user has logged in.
  * @property-read PassportData $passportData Optional. Telegram Passport data
+ *
+ * @property-read ProximityAlertTriggered $proximityAlertTriggered	Optional. Service message. A user in the chat triggered another user's proximity alert while sharing Live Location.
+ *
+ * @property-read VoiceChatStarted $voiceChatStarted Optional. Service message: voice chat started
+ * @property-read VoiceChatEnded $voiceChatEnded Optional. Service message: voice chat ended
+ * @property-read VoiceChatParticipantsInvited $voiceChatParticipantsInvited Optional. Service message: new participants invited to a voice chat
+ *
  * @property-read InlineKeyboard $replyMarkup Optional. Inline keyboard attached to the message. login_url buttons are
  * represented as ordinary url buttons.
  *
@@ -119,6 +132,7 @@ class Message extends Entity
             'messageId',
             'messageId',
             'from',
+            'senderChat',
             'date',
             'chat',
             'forwardFrom',
@@ -158,6 +172,7 @@ class Message extends Entity
             'groupChatCreated',
             'supergroupChatCreated',
             'channelChatCreated',
+            'messageAutoDeleteTimerChanged',
             'migrateToChatId',
             'migrateFromChatId',
             'pinnedMessage',
@@ -165,6 +180,10 @@ class Message extends Entity
             'successfulPayment',
             'connectedWebsite',
             'passportData',
+            'proximityAlertTriggered',
+            'voiceChatStarted',
+            'voiceChatEnded',
+            'voiceChatParticipantsInvited',
             'replyMarkup',
             'editedMessageId'
         ];
@@ -177,6 +196,7 @@ class Message extends Entity
     {
         return [
             'from' => User::class,
+            'senderChat' => Chat::class,
             'chat' => Chat::class,
             'forwardFrom' => User::class,
             'forwardFromChat' => Chat::class,
@@ -205,6 +225,11 @@ class Message extends Entity
             'invoice' => Invoice::class,
             'successfulPayment' => SuccessfulPayment::class,
             'passportData' => PassportData::class,
+            'proximityAlertTriggered' => ProximityAlertTriggered::class,
+            'voiceChatStarted' => VoiceChatStarted::class,
+            'voiceChatEnded' => VoiceChatEnded::class,
+            'voiceChatParticipantsInvited' => VoiceChatParticipantsInvited::class,
+            'messageAutoDeleteTimerChanged' => MessageAutoDeleteTimerChanged::class,
             'replyMarkup' => InlineKeyboard::class,
         ];
     }

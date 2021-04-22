@@ -39,6 +39,15 @@ use onix\telegram\entities\payments\ShippingQuery;
  *
  * @property-read PollAnswer $pollAnswer Optional. A user changed their answer in a non-anonymous poll.
  * Bots receive new votes only in polls that were sent by the bot itself.
+ *
+ * @property-read ChatMemberUpdated $myChatMember Optional. The bot's chat member status was updated in a chat.
+ * For private chats, this update is received only when the bot is blocked or unblocked by the user.
+ *
+ * @property-read ChatMemberUpdated $chatMember Optional. A chat member's status was updated in a chat.
+ * The bot must be an administrator in the chat and must explicitly specify “chat_member” in the list of
+ * allowed_updates to receive these updates.
+ *
+ *
  */
 class Update extends Entity
 {
@@ -59,7 +68,9 @@ class Update extends Entity
             'shippingQuery',
             'preCheckoutQuery',
             'poll',
-            'pollAnswer'
+            'pollAnswer',
+            'myChatMember',
+            'chatMember',
         ];
     }
     
@@ -80,6 +91,8 @@ class Update extends Entity
             'preCheckoutQuery' => PreCheckoutQuery::class,
             'poll' => Poll::class,
             'pollAnswer' => PollAnswer::class,
+            'myChatMember' => ChatMemberUpdated::class,
+            'chatMember' => ChatMemberUpdated::class,
         ];
     }
 

@@ -3,6 +3,7 @@ namespace onix\telegram;
 
 use onix\telegram\entities\CallbackQuery;
 use onix\telegram\entities\Chat;
+use onix\telegram\entities\ChatMemberUpdated;
 use onix\telegram\entities\ChosenInlineResult;
 use onix\telegram\entities\EditedChannelPost;
 use onix\telegram\entities\EditedMessage;
@@ -18,6 +19,7 @@ use onix\telegram\entities\User;
 use onix\telegram\exceptions\TelegramException;
 use onix\telegram\models\CallbackQuery as CallbackQueryRepo;
 use onix\telegram\models\Chat as ChatRepo;
+use onix\telegram\models\ChatMemberUpdated as ChatMemberUpdatedRepo;
 use onix\telegram\models\ChosenInlineResult as ChosenInlineResultRepo;
 use onix\telegram\models\Conversation as ConversationRepo;
 use onix\telegram\models\EditedMessage as EditedMessageRepo;
@@ -50,7 +52,7 @@ class Storage
      *
      * @param int|null $limit Limit the number of messages to fetch
      *
-     * @return MessageRepo[]|bool Fetched data or false if not connected
+     * @return MessageRepo[] Fetched data or false if not connected
      */
     public static function selectMessages($limit = null)
     {
@@ -208,7 +210,9 @@ class Storage
         $shipping_query_id = null,
         $pre_checkout_query_id = null,
         $poll_id = null,
-        $poll_answer_poll_id = null
+        $poll_answer_poll_id = null,
+        $my_chat_member_updated_id = null,
+        $chat_member_updated_id = null
     ) {
         if (($message_id === null) &&
             ($edited_message_id === null) &&
@@ -220,7 +224,9 @@ class Storage
             ($shipping_query_id === null) &&
             ($pre_checkout_query_id === null) &&
             ($poll_id === null) &&
-            ($poll_answer_poll_id === null)
+            ($poll_answer_poll_id === null) &&
+            ($my_chat_member_updated_id === null) &&
+            ($chat_member_updated_id === null)
         ) {
             throw new TelegramException('All update fields is null');
         }
@@ -267,6 +273,40 @@ class Storage
         return $result;
     }
     //</editor-fold>
+
+
+    /**
+     * @param ChatMemberUpdated $chat_member
+     *
+     * @return int|null
+     *
+     * @throws BaseException
+     * @throws TelegramException
+     */
+    private static function chatMemberUpdatedInsert(ChatMemberUpdated $chat_member)
+    {
+        $chat = $chat_member->chat;
+        self::chatInsert($chat);
+
+        $user = $chat_member->from;
+        self::userUpsert($user);
+
+        $repo = new ChatMemberUpdatedRepo();
+        $repo->chat_id = $chat_member->chat->id;
+        $repo->user_id = $chat_member->from->id;
+        $repo->date = self::getTimestamp($chat_member->date);
+        $repo->new_chat_member = self::entityToJson($chat_member->newChatMember);
+        $repo->old_chat_member = self::entityToJson($chat_member->oldChatMember);
+        $repo->invite_link = self::entityToJson($chat_member->inviteLink);
+
+        $result = $repo->save();
+        if (!$result) {
+            Yii::warning(['Insert updates error', $repo], 'telegram');
+            return null;
+        }
+
+        return $repo->id;
+    }
 
     //<editor-fold desc="*** User ***">
     /**
@@ -476,6 +516,8 @@ class Storage
         $pre_checkout_query_id   = null;
         $poll_id                 = null;
         $poll_answer_poll_id     = null;
+        $my_chat_member_updated_id = null;
+        $chat_member_updated_id  = null;
 
         if (($message = $update->message) && self::messageRequestInsert($message)) {
             $chat_id = $message->chat->id;
@@ -509,6 +551,10 @@ class Storage
             $poll_id = $poll->id;
         } elseif (($poll_answer = $update->pollAnswer) && self::pollAnswerRequestInsert($poll_answer)) {
             $poll_answer_poll_id = $poll_answer->pollId;
+        } elseif ($my_chat_member = $update->myChatMember) {
+            $my_chat_member_updated_id = self::chatMemberUpdatedInsert($my_chat_member);
+        } elseif ($chat_member = $update->chatMember) {
+            $chat_member_updated_id = self::chatMemberUpdatedInsert($chat_member);
         } else {
             return false;
         }
@@ -526,7 +572,9 @@ class Storage
             $shipping_query_id,
             $pre_checkout_query_id,
             $poll_id,
-            $poll_answer_poll_id
+            $poll_answer_poll_id,
+            $my_chat_member_updated_id,
+            $chat_member_updated_id
         );
     }
 
@@ -547,6 +595,9 @@ class Storage
         // Insert chat, update chat id in case it migrated
         $chat = $message->chat;
         self::chatInsert($chat, $message->migrateToChatId);
+
+        $senderChat = $message->senderChat;
+        self::chatInsert($senderChat);
 
         // Insert user and the relation with the chat
         if ($user = $message->from) {
@@ -615,6 +666,7 @@ class Storage
 
         $messageRepo->user_id = $user_id;
         $messageRepo->date = $date;
+        $messageRepo->sender_chat_id = $senderChat->id;
         $messageRepo->forward_from = $forward_from;
         $messageRepo->forward_from_chat = $forward_from_chat;
         $messageRepo->forward_from_message_id = $message->forwardFromMessageId;
@@ -660,6 +712,11 @@ class Storage
         $messageRepo->successful_payment = self::entityToJson($message->successfulPayment);
         $messageRepo->connected_website = $message->connectedWebsite;
         $messageRepo->passport_data = self::entityToJson($message->passportData);
+        $messageRepo->proximity_alert_triggered = self::entityToJson($message->proximityAlertTriggered);
+        $messageRepo->message_auto_delete_timer_changed = self::entityToJson($message->messageAutoDeleteTimerChanged);
+        $messageRepo->voice_chat_started = self::entityToJson($message->voiceChatStarted);
+        $messageRepo->voice_chat_ended = self::entityToJson($message->voiceChatEnded);
+        $messageRepo->voice_chat_participants_invited = self::entityToJson($message->voiceChatParticipantsInvited);
         $messageRepo->reply_markup = self::entityToJson($message->replyMarkup);
 
         if (!$messageRepo->save()) {

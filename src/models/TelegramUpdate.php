@@ -2,7 +2,6 @@
 namespace onix\telegram\models;
 
 use onix\data\ActiveRecordEx;
-use yii\db\ActiveQuery;
 
 /**
  * This is the model class for table "telegram.telegram_update".
@@ -25,6 +24,12 @@ use yii\db\ActiveQuery;
  *
  * @property int|null $poll_answer_poll_id A user changed their answer in a non-anonymous poll. Bots receive
  * new votes only in polls that were sent by the bot itself.
+ *
+ * @property int|null $my_chat_member_updated_id The bot's chat member status was updated in a chat. For private chats,
+ * this update is received only when the bot is blocked or unblocked by the user.
+ *
+ * @property int|null $chat_member_updated_id A chat member's status was updated in a chat. The bot must be an
+ * administrator in the chat and must explicitly specify “chat_member” in the list of allowed_updates to receive these updates.
  *
  * @property CallbackQuery $callbackQuery
  * @property Message $chat
@@ -87,7 +92,9 @@ class TelegramUpdate extends ActiveRecordEx
                     'shipping_query_id',
                     'pre_checkout_query_id',
                     'poll_id',
-                    'poll_answer_poll_id'
+                    'poll_answer_poll_id',
+                    'my_chat_member_updated_id',
+                    'chat_member_updated_id'
                 ],
                 'integer'
             ],
@@ -174,100 +181,130 @@ class TelegramUpdate extends ActiveRecordEx
     /**
      * Gets query for [[CallbackQuery]].
      *
-     * @return ActiveQuery|CallbackQueryQuery
+     * @return CallbackQueryQuery
+     *
+     * @noinspection PhpReturnDocTypeMismatchInspection
      */
     public function getCallbackQuery()
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->hasOne(CallbackQuery::class, ['id' => 'callback_query_id']);
     }
 
     /**
      * Gets query for [[Chat]].
      *
-     * @return ActiveQuery|MessageQuery
+     * @return MessageQuery
+     *
+     * @noinspection PhpReturnDocTypeMismatchInspection
      */
     public function getChat()
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->hasOne(Message::class, ['chat_id' => 'chat_id', 'id' => 'message_id']);
     }
 
     /**
      * Gets query for [[Chat0]].
      *
-     * @return ActiveQuery|MessageQuery
+     * @return MessageQuery
+     *
+     * @noinspection PhpReturnDocTypeMismatchInspection
      */
     public function getChat0()
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->hasOne(Message::class, ['chat_id' => 'chat_id', 'id' => 'channel_post_id']);
     }
 
     /**
      * Gets query for [[ChosenInlineResult]].
      *
-     * @return ActiveQuery|ChosenInlineResultQuery
+     * @return ChosenInlineResultQuery
+     *
+     * @noinspection PhpReturnDocTypeMismatchInspection
      */
     public function getChosenInlineResult()
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->hasOne(ChosenInlineResult::class, ['id' => 'chosen_inline_result_id']);
     }
 
     /**
      * Gets query for [[EditedChannelPost]].
      *
-     * @return ActiveQuery|EditedMessageQuery
+     * @return EditedMessageQuery
+     *
+     * @noinspection PhpReturnDocTypeMismatchInspection
      */
     public function getEditedChannelPost()
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->hasOne(EditedMessage::class, ['id' => 'edited_channel_post_id']);
     }
 
     /**
      * Gets query for [[EditedMessage]].
      *
-     * @return ActiveQuery|EditedMessageQuery
+     * @return EditedMessageQuery
+     *
+     * @noinspection PhpReturnDocTypeMismatchInspection
      */
     public function getEditedMessage()
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->hasOne(EditedMessage::class, ['id' => 'edited_message_id']);
     }
 
     /**
      * Gets query for [[InlineQuery]].
      *
-     * @return ActiveQuery|InlineQueryQuery
+     * @return InlineQueryQuery
+     *
+     * @noinspection PhpReturnDocTypeMismatchInspection
      */
     public function getInlineQuery()
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->hasOne(InlineQuery::class, ['id' => 'inline_query_id']);
     }
 
     /**
      * Gets query for [[Poll]].
      *
-     * @return ActiveQuery|PollQuery
+     * @return PollQuery
+     *
+     * @noinspection PhpReturnDocTypeMismatchInspection
      */
     public function getPoll()
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->hasOne(Poll::class, ['id' => 'poll_id']);
     }
 
     /**
      * Gets query for [[PreCheckoutQuery]].
      *
-     * @return ActiveQuery|PreCheckoutQueryQuery
+     * @return PreCheckoutQueryQuery
+     *
+     * @noinspection PhpReturnDocTypeMismatchInspection
      */
     public function getPreCheckoutQuery()
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->hasOne(PreCheckoutQuery::class, ['id' => 'pre_checkout_query_id']);
     }
 
     /**
      * Gets query for [[ShippingQuery]].
      *
-     * @return ActiveQuery|ShippingQueryQuery
+     * @return ShippingQueryQuery
+     *
+     * @noinspection PhpReturnDocTypeMismatchInspection
      */
     public function getShippingQuery()
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->hasOne(ShippingQuery::class, ['id' => 'shipping_query_id']);
     }
 
