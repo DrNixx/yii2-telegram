@@ -449,7 +449,7 @@ class Storage
     /**
      * Insert chat
      *
-     * @param Chat|null $chat
+     * @param Chat $chat
      * @param string|null $migrate_to_chat_id
      *
      * @return bool If the insert was successful
@@ -457,12 +457,8 @@ class Storage
      * @throws BaseException
      * @throws TelegramException
      */
-    public static function chatInsert(?Chat $chat, ?string $migrate_to_chat_id = null)
+    public static function chatInsert(Chat $chat, ?string $migrate_to_chat_id = null)
     {
-        if ($chat === null) {
-            return true;
-        }
-
         $chat_id = $chat->id;
         $old_id = null;
         $chat_type = $chat->type;
@@ -594,6 +590,8 @@ class Storage
      */
     public static function messageRequestInsert(Message $message)
     {
+        Yii::error(print_r($message, true));
+
         $date = self::getTimestamp($message->date);
 
         // Insert chat, update chat id in case it migrated
