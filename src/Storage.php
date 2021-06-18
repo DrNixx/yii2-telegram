@@ -590,16 +590,16 @@ class Storage
      */
     public static function messageRequestInsert(Message $message)
     {
-        Yii::error(print_r($message, true));
-
         $date = self::getTimestamp($message->date);
 
         // Insert chat, update chat id in case it migrated
         $chat = $message->chat;
         self::chatInsert($chat, $message->migrateToChatId);
 
-        $senderChat = $message->senderChat;
-        self::chatInsert($senderChat);
+        if ($senderChat = $message->senderChat) {
+            self::chatInsert($senderChat);
+            $senderChat = $senderChat->id;
+        }
 
         // Insert user and the relation with the chat
         if ($user = $message->from) {
@@ -668,7 +668,7 @@ class Storage
 
         $messageRepo->user_id = $user_id;
         $messageRepo->date = $date;
-        $messageRepo->sender_chat_id = $senderChat->id;
+        $messageRepo->sender_chat_id = $senderChat;
         $messageRepo->forward_from = $forward_from;
         $messageRepo->forward_from_chat = $forward_from_chat;
         $messageRepo->forward_from_message_id = $message->forwardFromMessageId;
