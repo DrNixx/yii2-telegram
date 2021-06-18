@@ -449,16 +449,20 @@ class Storage
     /**
      * Insert chat
      *
-     * @param Chat $chat
+     * @param Chat|null $chat
      * @param string|null $migrate_to_chat_id
      *
      * @return bool If the insert was successful
      *
-     * @throws TelegramException
      * @throws BaseException
+     * @throws TelegramException
      */
-    public static function chatInsert(Chat $chat, $migrate_to_chat_id = null)
+    public static function chatInsert(?Chat $chat, ?string $migrate_to_chat_id = null)
     {
+        if ($chat === null) {
+            return true;
+        }
+
         $chat_id = $chat->id;
         $old_id = null;
         $chat_type = $chat->type;
