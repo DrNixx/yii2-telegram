@@ -9,6 +9,7 @@ namespace onix\telegram\entities;
  * @property-read string url Webhook URL, may be empty if webhook is not set up
  * @property-read bool $hasCustomCertificate True, if a custom certificate was provided for webhook certificate checks
  * @property-read int $pendingUpdateCount Number of updates awaiting delivery
+ * @property-read string $ipAddress
  * @property-read int $lastErrorDate Optional. Unix time for the most recent error that happened when trying to
  * deliver an update via webhook
  *
@@ -32,6 +33,7 @@ class WebhookInfo extends Entity
             'url',
             'hasCustomCertificate',
             'pendingUpdateCount',
+            'ipAddress',
             'lastErrorDate',
             'lastErrorMessage',
             'maxConnections',
