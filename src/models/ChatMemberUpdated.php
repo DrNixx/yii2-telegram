@@ -22,7 +22,7 @@ class ChatMemberUpdated extends ActiveRecordEx
      */
     public static function tableName()
     {
-        return 'telegram.telegram_update';
+        return 'telegram.chat_member_updated';
     }
 
     /**
