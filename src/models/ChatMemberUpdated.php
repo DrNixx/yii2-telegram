@@ -38,8 +38,7 @@ class ChatMemberUpdated extends ActiveRecordEx
                     'date',
                     'old_chat_member',
                     'new_chat_member',
-                    'invite_link',
-                    'created_at',
+                    'invite_link'
                 ],
                 'default',
                 'value' => null
