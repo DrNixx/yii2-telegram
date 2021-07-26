@@ -18,7 +18,7 @@ use onix\data\ActiveRecordEx;
 class ChatMemberUpdated extends ActiveRecordEx
 {
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public static function tableName()
     {
@@ -26,15 +26,13 @@ class ChatMemberUpdated extends ActiveRecordEx
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function rules()
     {
         return [
-            [['id'], 'required'],
             [
                 [
-                    'id',
                     'chat_id',
                     'user_id',
                     'date',
@@ -48,7 +46,6 @@ class ChatMemberUpdated extends ActiveRecordEx
             ],
             [
                 [
-                    'id',
                     'chat_id',
                     'user_id',
                 ],
@@ -100,7 +97,7 @@ class ChatMemberUpdated extends ActiveRecordEx
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      * @return ChatMemberUpdatedQuery the active query used by this AR class.
      */
     public static function find($alias = null)
