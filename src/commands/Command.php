@@ -2,6 +2,7 @@
 namespace onix\telegram\commands;
 
 use onix\telegram\entities\CallbackQuery;
+use onix\telegram\entities\ChatMemberUpdated;
 use onix\telegram\entities\ChosenInlineResult;
 use onix\telegram\entities\InlineQuery;
 use onix\telegram\entities\Message;
@@ -30,6 +31,8 @@ use yii\helpers\ArrayHelper;
  * @property-read Message $channelPost Optional. New post in the channel, can be any kind — text, photo, sticker, etc.
  * @property-read Message $editedChannelPost Optional. New version of a post in the channel that is known to
  * the bot and was edited
+ * @property-read ChatMemberUpdated $myChatMember
+ * @property-read ChatMemberUpdated $chatMember
  *
  * @property-read InlineQuery $inlineQuery Optional. New incoming inline query
  * @property-read ChosenInlineResult $chosenInlineResult Optional. The result of an inline query that was chosen
@@ -465,7 +468,9 @@ abstract class Command extends BaseObject
         if ($message = $this->message ?:
             $this->editedMessage ?:
             $this->channelPost ?:
-            $this->editedChannelPost
+            $this->editedChannelPost ?:
+            $this->myChatMember ?:
+            $this->chatMember
         ) {
             return $this->request->sendMessage(ArrayHelper::merge([
                 'chat_id' => $message->chat->id,
