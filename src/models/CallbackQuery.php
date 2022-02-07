@@ -68,7 +68,7 @@ class CallbackQuery extends ActiveRecordEx
         return [
             [['id'], 'required'],
             [['id', 'user_id', 'chat_id', 'message_id'], 'default', 'value' => null],
-            [['id', 'user_id', 'chat_id', 'message_id'], 'integer'],
+            [['id', 'user_id', 'chat_id', 'message_id'], 'number'],
             [['created_at'], 'safe'],
             [['inline_message_id', 'chat_instance', 'data', 'game_short_name'], 'string', 'max' => 255],
             [['id'], 'unique'],

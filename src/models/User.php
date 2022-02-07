@@ -74,7 +74,7 @@ class User extends ActiveRecordEx
         return [
             [['id', 'first_name'], 'required'],
             [['id', 'user_id'], 'default', 'value' => null],
-            [['id', 'user_id'], 'integer'],
+            [['id', 'user_id'], 'number'],
             [['is_bot'], 'boolean'],
             [['created_at', 'updated_at'], 'safe'],
             [['first_name', 'last_name'], 'string', 'max' => 255],

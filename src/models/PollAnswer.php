@@ -57,7 +57,7 @@ class PollAnswer extends ActiveRecordEx
         return [
             [['poll_id', 'user_id'], 'required'],
             [['poll_id', 'user_id'], 'default', 'value' => null],
-            [['poll_id', 'user_id'], 'integer'],
+            [['poll_id', 'user_id'], 'number'],
             [['option_ids'], 'string'],
             [['created_at'], 'safe'],
             [['poll_id', 'user_id'], 'unique', 'targetAttribute' => ['poll_id', 'user_id']],

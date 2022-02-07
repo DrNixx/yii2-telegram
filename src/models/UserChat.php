@@ -31,7 +31,7 @@ class UserChat extends ActiveRecordEx
         return [
             [['user_id', 'chat_id'], 'required'],
             [['user_id', 'chat_id'], 'default', 'value' => null],
-            [['user_id', 'chat_id'], 'integer'],
+            [['user_id', 'chat_id'], 'number'],
             [['user_id', 'chat_id'], 'unique', 'targetAttribute' => ['user_id', 'chat_id']],
             [
                 ['chat_id'],

@@ -161,7 +161,7 @@ class Message extends ActiveRecordEx
                     'migrate_from_chat_id',
                     'sender_chat_id'
                 ],
-                'integer'
+                'number'
             ],
             [['date', 'forward_date', 'edit_date'], 'safe'],
             [

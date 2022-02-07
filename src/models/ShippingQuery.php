@@ -56,7 +56,7 @@ class ShippingQuery extends ActiveRecordEx
         return [
             [['id', 'invoice_payload', 'shipping_address'], 'required'],
             [['id', 'user_id'], 'default', 'value' => null],
-            [['id', 'user_id'], 'integer'],
+            [['id', 'user_id'], 'number'],
             [['created_at'], 'safe'],
             [['invoice_payload', 'shipping_address'], 'string', 'max' => 255],
             [['id'], 'unique'],

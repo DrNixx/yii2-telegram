@@ -58,7 +58,7 @@ class Conversation extends ActiveRecordEx
     {
         return [
             [['user_id', 'chat_id'], 'default', 'value' => null],
-            [['user_id', 'chat_id'], 'integer'],
+            [['user_id', 'chat_id'], 'number'],
             [['notes'], 'string'],
             [['created_at', 'updated_at'], 'safe'],
             [['status'], 'string', 'max' => 15],

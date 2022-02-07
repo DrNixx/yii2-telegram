@@ -58,7 +58,7 @@ class ChosenInlineResult extends ActiveRecordEx
         return [
             [['result_id', 'query'], 'required'],
             [['user_id'], 'default', 'value' => null],
-            [['user_id'], 'integer'],
+            [['user_id'], 'number'],
             [['query'], 'string'],
             [['created_at'], 'safe'],
             [['result_id', 'location', 'inline_message_id'], 'string', 'max' => 255],

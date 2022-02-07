@@ -59,7 +59,7 @@ class PreCheckoutQuery extends ActiveRecordEx
         return [
             [['id', 'invoice_payload'], 'required'],
             [['id', 'user_id', 'total_amount'], 'default', 'value' => null],
-            [['id', 'user_id', 'total_amount'], 'integer'],
+            [['id', 'user_id', 'total_amount'], 'number'],
             [['order_info'], 'string'],
             [['created_at'], 'safe'],
             [['currency'], 'string', 'max' => 3],

@@ -42,7 +42,7 @@ class EditedMessage extends ActiveRecordEx
     {
         return [
             [['chat_id', 'message_id', 'user_id'], 'default', 'value' => null],
-            [['chat_id', 'message_id', 'user_id'], 'integer'],
+            [['chat_id', 'message_id', 'user_id'], 'number'],
             [['edit_date'], 'safe'],
             [['text', 'entities', 'caption'], 'string'],
             [

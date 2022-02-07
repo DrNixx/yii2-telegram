@@ -96,7 +96,7 @@ class TelegramUpdate extends ActiveRecordEx
                     'my_chat_member_updated_id',
                     'chat_member_updated_id'
                 ],
-                'integer'
+                'number'
             ],
             [['id'], 'unique'],
             [

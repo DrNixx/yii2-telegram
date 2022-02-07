@@ -57,7 +57,7 @@ class InlineQuery extends ActiveRecordEx
         return [
             [['id', 'user_id', 'query'], 'required'],
             [['id', 'user_id'], 'default', 'value' => null],
-            [['id', 'user_id'], 'integer'],
+            [['id', 'user_id'], 'number'],
             [['query'], 'string'],
             [['created_at'], 'safe'],
             [['location', 'offset'], 'string', 'max' => 255],

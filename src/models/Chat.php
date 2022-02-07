@@ -67,7 +67,7 @@ class Chat extends ActiveRecordEx
         return [
             [['id', 'type'], 'required'],
             [['id', 'old_id'], 'default', 'value' => null],
-            [['id', 'old_id'], 'integer'],
+            [['id', 'old_id'], 'number'],
             [['all_members_are_administrators'], 'boolean'],
             [['created_at', 'updated_at'], 'safe'],
             [['type'], 'string', 'max' => 15],

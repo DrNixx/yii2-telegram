@@ -55,7 +55,7 @@ class RequestLimiter extends ActiveRecordEx
     {
         return [
             [['chat_id'], 'default', 'value' => null],
-            [['chat_id'], 'integer'],
+            [['chat_id'], 'number'],
             [['created_at'], 'safe'],
             [['inline_message_id', 'method'], 'string', 'max' => 255],
             [

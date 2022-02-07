@@ -72,7 +72,7 @@ class Poll extends ActiveRecordEx
         return [
             [['id', 'question', 'options', 'explanation_entities'], 'required'],
             [['id', 'total_voter_count', 'correct_option_id', 'open_period'], 'default', 'value' => null],
-            [['id', 'total_voter_count', 'correct_option_id', 'open_period'], 'integer'],
+            [['id', 'total_voter_count', 'correct_option_id', 'open_period'], 'number'],
             [['options', 'explanation_entities'], 'string'],
             [['is_closed', 'is_anonymous', 'allows_multiple_answers'], 'boolean'],
             [['close_date', 'created_at'], 'safe'],

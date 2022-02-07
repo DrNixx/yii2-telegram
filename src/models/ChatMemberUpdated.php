@@ -48,7 +48,7 @@ class ChatMemberUpdated extends ActiveRecordEx
                     'chat_id',
                     'user_id',
                 ],
-                'integer'
+                'number'
             ],
             [['date', 'created_at'], 'safe'],
             [['old_chat_member', 'new_chat_member', 'invite_link'], 'string'],
