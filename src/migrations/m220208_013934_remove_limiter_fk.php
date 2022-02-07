@@ -5,7 +5,7 @@ use yii\db\Migration;
 /**
  * Class m210421_212934_update_api_5_1
  */
-class m210421_212934_update_api_5_1 extends Migration
+class m220208_013934_remove_limiter_fk extends Migration
 {
     /**
      * {@inheritdoc}
