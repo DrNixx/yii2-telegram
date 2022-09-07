@@ -25,7 +25,7 @@ class ChosenInlineResult extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['resultId', 'from', 'location', 'inlineMessageId', 'query'];
     }

@@ -20,7 +20,7 @@ class VideoNote extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['fileId', 'fileUniqueId', 'length', 'duration', 'thumb', 'fileSize'];
     }

@@ -14,7 +14,7 @@ class UserProfilePhotos extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['photos', 'totalCount'];
     }

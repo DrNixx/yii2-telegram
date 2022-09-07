@@ -22,7 +22,7 @@ class Video extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['fileId', 'fileUniqueId', 'width', 'height', 'duration', 'thumb', 'mimeType', 'fileSize'];
     }

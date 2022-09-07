@@ -20,7 +20,7 @@ class OrderInfo extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['name', 'phoneNumber', 'email', 'shippingAddress'];
     }

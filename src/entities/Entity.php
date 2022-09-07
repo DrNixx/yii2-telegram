@@ -52,7 +52,7 @@ abstract class Entity extends Model implements JsonSerializable
      * Returns the list of attribute names.
      * @return array list of attribute names.
      */
-    public function attributes()
+    public function attributes(): array
     {
         return [];
     }

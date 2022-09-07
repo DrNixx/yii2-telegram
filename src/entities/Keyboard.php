@@ -39,7 +39,7 @@ class Keyboard extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['resizeKeyboard', 'oneTimeKeyboard', 'selective', 'removeKeyboard', 'forceReply', 'keyboard'];
     }

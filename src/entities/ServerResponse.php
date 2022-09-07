@@ -18,7 +18,7 @@ class ServerResponse extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['ok', 'result', 'errorCode', 'description'];
     }

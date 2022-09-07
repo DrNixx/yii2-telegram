@@ -28,7 +28,7 @@ class CallbackQuery extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['id', 'from', 'message', 'inlineMessageId', 'chatInstance', 'data', 'gameShortName'];
     }

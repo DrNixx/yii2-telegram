@@ -31,7 +31,7 @@ class ChatPermissions extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return [
             'canSendMessages',

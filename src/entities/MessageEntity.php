@@ -17,13 +17,15 @@ namespace onix\telegram\entities;
  * @property-read string $url Optional. For "text_link" only, url that will be opened after user taps on the text
  * @property-read User $user Optional. For "text_mention" only, the mentioned user
  * @property-read string $language Optional. For "pre" only, the programming language of the entity text
+ * @property-read string $customEmojiId Optional For “custom_emoji” only, unique identifier of the custom emoji.
+ * Use getCustomEmojiStickers to get full information about the sticker
  */
 class MessageEntity extends Entity
 {
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['type', 'offset', 'length', 'url', 'user', 'language'];
     }

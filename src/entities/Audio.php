@@ -22,7 +22,7 @@ class Audio extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['fileId', 'fileUniqueId', 'duration', 'performer', 'title', 'mimeType', 'fileSize', 'thumb'];
     }

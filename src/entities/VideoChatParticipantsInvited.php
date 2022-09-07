@@ -2,15 +2,15 @@
 namespace onix\telegram\entities;
 
 /**
- * Class VoiceChatParticipantsInvited
+ * Class VideoChatParticipantsInvited
  *
  * Represents a service message about new members invited to a voice chat
  *
- * @link https://core.telegram.org/bots/api#voicechatparticipantsinvited
+ * @link https://core.telegram.org/bots/api#videochatparticipantsinvited
  *
  * @property-read User[] $users Optional. New members that were invited to the voice chat
  */
-class VoiceChatParticipantsInvited extends Entity
+class VideoChatParticipantsInvited extends Entity
 {
     /**
      * @inheritDoc

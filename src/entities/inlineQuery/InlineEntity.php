@@ -20,7 +20,7 @@ abstract class InlineEntity extends Entity implements InlineQueryResult
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return [
             'type',

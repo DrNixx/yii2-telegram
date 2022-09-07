@@ -25,7 +25,7 @@ class PreCheckoutQuery extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['id', 'from', 'currency', 'totalAmount', 'invoicePayload', 'shippingOptionId', 'orderInfo'];
     }

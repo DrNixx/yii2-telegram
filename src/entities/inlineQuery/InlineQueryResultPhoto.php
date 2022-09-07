@@ -37,7 +37,7 @@ class InlineQueryResultPhoto extends InlineEntity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ArrayHelper::merge(
             parent::attributes(),

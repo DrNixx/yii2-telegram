@@ -18,7 +18,7 @@ class StickerSet extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['name', 'title', 'isAnimated', 'containsMasks', 'stickers', 'thumb'];
     }

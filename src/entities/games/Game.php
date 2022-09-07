@@ -32,7 +32,7 @@ class Game extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['title', 'description', 'photo', 'text', 'textEntities', 'animation'];
     }

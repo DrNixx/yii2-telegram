@@ -19,7 +19,7 @@ class InlineQuery extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['id', 'from', 'location', 'query', 'offset'];
     }

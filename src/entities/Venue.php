@@ -18,7 +18,7 @@ class Venue extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['location', 'title', 'address', 'foursquareId', 'foursquareType'];
     }

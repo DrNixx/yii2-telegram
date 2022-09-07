@@ -106,11 +106,24 @@ use onix\telegram\entities\payments\SuccessfulPayment;
  * @property-read string $connectedWebsite Optional. The domain name of the website on which the user has logged in.
  * @property-read PassportData $passportData Optional. Telegram Passport data
  *
- * @property-read ProximityAlertTriggered $proximityAlertTriggered	Optional. Service message. A user in the chat triggered another user's proximity alert while sharing Live Location.
+ * @property-read ProximityAlertTriggered $proximityAlertTriggered	Optional. Service message. A user in the chat
+ * triggered another user's proximity alert while sharing Live Location.
  *
+ * @deprecated
  * @property-read VoiceChatStarted $voiceChatStarted Optional. Service message: voice chat started
+ * @deprecated
  * @property-read VoiceChatEnded $voiceChatEnded Optional. Service message: voice chat ended
- * @property-read VoiceChatParticipantsInvited $voiceChatParticipantsInvited Optional. Service message: new participants invited to a voice chat
+ * @deprecated
+ * @property-read VoiceChatParticipantsInvited $voiceChatParticipantsInvited Optional. Service message: new participants
+ * invited to a voice chat
+ *
+ * @property-read VideoChatScheduled $videoChatScheduled Optional. Service message: video chat scheduled
+ * @property-read VideoChatStarted $videoChatStarted Optional. Service message: voice chat started
+ * @property-read VideoChatEnded $videoChatEnded Optional. Service message: voice chat ended
+ * @property-read VideoChatParticipantsInvited $videoChatParticipantsInvited Optional. Service message: new participants
+ * invited to a voice chat
+ *
+ * @property-read WebAppData $webAppData Optional. Service message: data sent by a Web App
  *
  * @property-read InlineKeyboard $replyMarkup Optional. Inline keyboard attached to the message. login_url buttons are
  * represented as ordinary url buttons.
@@ -126,7 +139,7 @@ class Message extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return [
             'messageId',
@@ -181,9 +194,14 @@ class Message extends Entity
             'connectedWebsite',
             'passportData',
             'proximityAlertTriggered',
-            'voiceChatStarted',
-            'voiceChatEnded',
-            'voiceChatParticipantsInvited',
+            'voiceChatStarted', // deprecated
+            'voiceChatEnded', // deprecated
+            'voiceChatParticipantsInvited', // deprecated
+            'videoChatScheduled',
+            'videoChatStarted',
+            'videoChatEnded',
+            'videoChatParticipantsInvited',
+            'webAppData',
             'replyMarkup',
             'editedMessageId'
         ];
@@ -226,9 +244,9 @@ class Message extends Entity
             'successfulPayment' => SuccessfulPayment::class,
             'passportData' => PassportData::class,
             'proximityAlertTriggered' => ProximityAlertTriggered::class,
-            'voiceChatStarted' => VoiceChatStarted::class,
-            'voiceChatEnded' => VoiceChatEnded::class,
-            'voiceChatParticipantsInvited' => VoiceChatParticipantsInvited::class,
+            'voiceChatStarted' => VideoChatStarted::class,
+            'voiceChatEnded' => VideoChatEnded::class,
+            'voiceChatParticipantsInvited' => VideoChatParticipantsInvited::class,
             'messageAutoDeleteTimerChanged' => MessageAutoDeleteTimerChanged::class,
             'replyMarkup' => InlineKeyboard::class,
         ];

@@ -23,7 +23,7 @@ class ChatPhoto extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['smallFileId', 'smallFileUniqueId', 'bigFileId', 'bigFileUniqueId'];
     }

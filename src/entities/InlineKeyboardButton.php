@@ -36,7 +36,7 @@ class InlineKeyboardButton extends KeyboardButton
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return [
             'text',

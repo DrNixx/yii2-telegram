@@ -26,7 +26,7 @@ class Animation extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['fileId', 'fileUniqueId', 'width', 'height', 'duration', 'thumb', 'fileName', 'mimeType', 'fileSize'];
     }
