@@ -176,6 +176,7 @@ class Message extends Entity
             'newChatParticipant', // depricated
             'newChatMember', // depricated
             'newChatMembers',
+            'leftChatParticipant', // depricated
             'leftChatMember',
             'newChatTitle',
             'newChatPhoto',
