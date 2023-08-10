@@ -139,6 +139,14 @@ use yii\httpclient\Client;
  * for a chat. Any previously generated link is revoked. The bot must be an administrator in the chat for this to
  * work and must have the appropriate admin rights. Returns the new invite link as String on success.
  *
+ * @method ServerResponse approveChatJoinRequest(array $data) Use this method to approve a chat join request.
+ * The bot must be an administrator in the chat for this to work and must have the can_invite_users
+ * administrator right. Returns True on success.
+ *
+ * @method static ServerResponse declineChatJoinRequest(array $data) Use this method to decline a chat join request.
+ * The bot must be an administrator in the chat for this to work and must have the can_invite_users
+ * administrator right. Returns True on success.
+ *
  * @method ServerResponse setChatPhoto(array $data) Use this method to set a new profile photo for the chat.
  * Photos can't be changed for private chats. The bot must be an administrator in the chat for this to work and must
  * have the appropriate admin rights. Returns True on success.
@@ -280,6 +288,8 @@ use yii\httpclient\Client;
  * @method ServerResponse getGameHighScores(array $data) Use this method to get data for high score tables.
  * Will return the score of the specified user and several of his neighbors in a game.
  * On success, returns an Array of GameHighScore objects.
+ *
+ *
  */
 class Request extends BaseObject
 {
@@ -366,6 +376,8 @@ class Request extends BaseObject
         'setChatAdministratorCustomTitle',
         'setChatPermissions',
         'exportChatInviteLink',
+        'approveChatJoinRequest',
+        'declineChatJoinRequest',
         'setChatPhoto',
         'deleteChatPhoto',
         'setChatTitle',
