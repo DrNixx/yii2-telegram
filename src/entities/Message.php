@@ -12,6 +12,8 @@ use onix\telegram\entities\payments\SuccessfulPayment;
  * @link https://core.telegram.org/bots/api#message
  *
  * @property-read int $messageId Unique message identifier
+ * @property-read int $messageThreadId Optional. Unique identifier of a message thread to which the message belongs;
+ * for supergroups only
  * @property-read User $from Optional. Sender, can be empty for messages sent to channels
  * @property-read Chat $senderChat Optional. Sender of the message, sent on behalf of a chat. The channel itself for
  * channel messages. The supergroup itself for messages from anonymous group administrators. The linked channel
@@ -30,6 +32,11 @@ use onix\telegram\entities\payments\SuccessfulPayment;
  *
  * @property-read string $forwardSenderName Optional. Sender's name for messages forwarded from users who disallow
  * adding a link to their account in forwarded messages
+ *
+ * @property-read bool $isTopicMessage Optional. True, if the message is sent to a forum topic
+ *
+ * @property-read bool $isAutomaticForward Optional. True, if the message is a channel post that was automatically
+ * forwarded to the connected discussion group
  *
  * @property-read int $forwardDate Optional. For forwarded messages, date the original message was sent in Unix time
  * @property-read ReplyToMessage $replyToMessage Optional. For replies, the original message. Note that the Message
@@ -88,12 +95,12 @@ use onix\telegram\entities\payments\SuccessfulPayment;
  *
  * @property-read int $migrateToChatId Optional. The group has been migrated to a supergroup with the specified
  * identifier. This number may be greater than 32 bits and some programming languages may have difficulty/silent
- * defects in interpreting it. But it smaller than 52 bits, so a signed 64 bit integer or double-precision float type
+ * defects in interpreting it. But it smaller than 52 bits, so a signed 64-bit integer or double-precision float type
  * are safe for storing this identifier.
  *
  * @property-read int $migrateFromChatId Optional. The supergroup has been migrated from a group with the specified
  * identifier. This number may be greater than 32 bits and some programming languages may have difficulty/silent
- * defects in interpreting it. But it smaller than 52 bits, so a signed 64 bit integer or double-precision float type
+ * defects in interpreting it. But it smaller than 52 bits, so a signed 64-bit integer or double-precision float type
  * are safe for storing this identifier.
  *
  * @property-read Message $pinnedMessage Optional. Specified message was pinned. Note that the Message object in this
@@ -130,7 +137,7 @@ class Message extends Entity
     {
         return [
             'messageId',
-            'messageId',
+            'messageThreadId',
             'from',
             'senderChat',
             'date',
@@ -140,6 +147,8 @@ class Message extends Entity
             'forwardFromMessageId',
             'forwardSignature',
             'forwardSenderName',
+            'isTopicMessage',
+            'isAutomaticForward',
             'forwardDate',
             'replyToMessage',
             'viaBot',
@@ -164,6 +173,7 @@ class Message extends Entity
             'poll',
             'venue',
             'location',
+            'newChatParticipant', // depricated
             'newChatMembers',
             'leftChatMember',
             'newChatTitle',
