@@ -595,7 +595,7 @@ class Request extends BaseObject
      * @param bool $has_resource
      * @param array $multipart
      *
-     * @return mixed
+     * @return string
      */
     private function mediaInputHelper($item, bool &$has_resource, array &$multipart)
     {
@@ -621,7 +621,7 @@ class Request extends BaseObject
 
                 if ($media instanceof CURLFile) {
                     $has_resource = true;
-                    $unique_key = uniqid($type . '_', false);
+                    $unique_key = uniqid($type . '_');
                     $multipart[] = ['name' => $unique_key, 'contents' => $media];
 
                     // We're literally overwriting the passed media type data!
@@ -865,20 +865,18 @@ class Request extends BaseObject
     /**
      * Any called method should be relayed to the `send` method.
      *
-     * @param string $action
-     * @param array  $data
+     * @param string $name
+     * @param array  $params
      *
      * @return ServerResponse
-     *
-     * @noinspection PhpMissingParamTypeInspection
      */
-    public function __call($action, $data)
+    public function __call($name, $params)
     {
         // Make sure to add the action being called as the first parameter to be passed.
-        array_unshift($data, $action);
+        array_unshift($params, $name);
 
         // @todo Use splat operator for unpacking when we move to PHP 5.6+
-        return call_user_func_array([$this, 'send'], $data);
+        return call_user_func_array([$this, 'send'], $params);
     }
 
     /**
@@ -929,12 +927,12 @@ class Request extends BaseObject
     /**
      * Enable request limiter
      *
-     * @param boolean $enable
+     * @param bool $enable
      * @param array   $options
      *
      * @throws TelegramException
      */
-    public function setLimiter($enable = true, array $options = [])
+    public function setLimiter(bool $enable = true, array $options = [])
     {
         $options_default = [
             'interval' => 1,
@@ -1000,8 +998,8 @@ class Request extends BaseObject
                 'setPassportDataErrors',
             ];
 
-            $chat_id = isset($data['chat_id']) ? $data['chat_id'] : null;
-            $inline_message_id = isset($data['inline_message_id']) ? $data['inline_message_id'] : null;
+            $chat_id = $data['chat_id'] ?? null;
+            $inline_message_id = $data['inline_message_id'] ?? null;
 
             if (($chat_id || $inline_message_id) && in_array($action, $limited_methods, true)) {
                 $timeout = 60;
