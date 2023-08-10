@@ -13,6 +13,7 @@ namespace onix\telegram\entities;
  * @property-read int $width Sticker width
  * @property-read int $height Sticker height
  * @property-read bool $isAnimated True, if the sticker is animated
+ * @property-read bool $isVideo True, if the sticker is a video sticker
  * @property-read PhotoSize $thumb Optional. Sticker thumbnail in .webp or .jpg format
  * @property-read string $emoji Optional. Emoji associated with the sticker
  * @property-read string $setName Optional. Name of the sticker set to which the sticker belongs
@@ -32,6 +33,7 @@ class Sticker extends Entity
             'width',
             'height',
             'isAnimated',
+            'isVideo',
             'thumb',
             'emoji',
             'setName',
