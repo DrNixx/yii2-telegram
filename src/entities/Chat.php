@@ -16,6 +16,8 @@ namespace onix\telegram\entities;
  * @property-read string $firstName Optional. First name of the other party in a private chat
  * @property-read string $lastName Optional. Last name of the other party in a private chat
  * @property-read ChatPhoto $photo Optional. Chat photo. Returned only in getChat.
+ * @property-read bool $hasPrivateForwards Optional. True, if privacy settings of the other party in the private
+ * chat allows to use tg://user?id=<user_id> links only in chats with the user. Returned only in getChat.
  * @property-read string $description Optional. Description, for groups, supergroups and channel chats.
  * Returned only in getChat.
  *
@@ -31,6 +33,9 @@ namespace onix\telegram\entities;
  *
  * @property-read int $slowModeDelay Optional. For supergroups, the minimum allowed delay between consecutive messages
  * sent by each unpriviledged user. Returned only in getChat.
+ *
+ * @property-read bool $hasProtectedContent Optional. True, if messages from the chat can't be forwarded to other chats.
+ * Returned only in getChat.
  *
  * @property-read string $stickerSetName Optional. For supergroups, name of group sticker set. Returned only in getChat.
  * @property-read bool $canSetStickerSet Optional. True, if the bot can change the group sticker set.
@@ -53,11 +58,13 @@ class Chat extends Entity
             'firstName',
             'lastName',
             'photo',
+            'hasPrivateForwards',
             'description',
             'inviteLink',
             'pinnedMessage',
             'permissions',
             'slowModeDelay',
+            'hasProtectedContent',
             'stickerSetName',
             'canSetStickerSet',
             'allMembersAreAdministrators'

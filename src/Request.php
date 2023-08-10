@@ -128,6 +128,15 @@ use yii\httpclient\Client;
  * supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate
  * admin rights. Pass False for all boolean parameters to demote a user. Returns True on success.
  *
+ * @method ServerResponse banChatSenderChat(array $data) Use this method to ban a channel chat in a supergroup
+ * or a channel. Until the chat is unbanned, the owner of the banned chat won't be able to send messages on behalf
+ * of any of their channels. The bot must be an administrator in the supergroup or channel for this to work and must
+ * have the appropriate administrator rights. Returns True on success.
+ *
+ * @method static ServerResponse unbanChatSenderChat(array $data) Use this method to unban a previously banned
+ * channel chat in a supergroup or channel. The bot must be an administrator for this to work and must have
+ * the appropriate administrator rights. Returns True on success.
+ *
  * @method ServerResponse setChatAdministratorCustomTitle(array $data) Use this method to set a custom title
  * for an administrator in a supergroup promoted by the bot. Returns True on success.
  *
@@ -373,6 +382,8 @@ class Request extends BaseObject
         'unbanChatMember',
         'restrictChatMember',
         'promoteChatMember',
+        'banChatSenderChat',
+        'unbanChatSenderChat',
         'setChatAdministratorCustomTitle',
         'setChatPermissions',
         'exportChatInviteLink',

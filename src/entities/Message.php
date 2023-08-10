@@ -44,6 +44,7 @@ use onix\telegram\entities\payments\SuccessfulPayment;
  *
  * @property-read User $viaBot Optional. Bot through which the message was sent
  * @property-read int $editDate Optional. Date the message was last edited in Unix time
+ * @property-read bool $hasProtectedContent Optional. True, if the message can't be forwarded
  * @property-read string $mediaGroupId Optional. The unique identifier of a media message group this message belongs to
  * @property-read string $authorSignature Optional. Signature of the post author for messages in channels
  * @property-read string $text Optional. For text messages, the actual UTF-8 text of the message, 0-4096 characters
@@ -153,6 +154,7 @@ class Message extends Entity
             'replyToMessage',
             'viaBot',
             'editDate',
+            'hasProtectedContent',
             'mediaGroupId',
             'authorSignature',
             'text',
