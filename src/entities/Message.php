@@ -174,6 +174,7 @@ class Message extends Entity
             'venue',
             'location',
             'newChatParticipant', // depricated
+            'newChatMember', // depricated
             'newChatMembers',
             'leftChatMember',
             'newChatTitle',
