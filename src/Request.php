@@ -111,7 +111,7 @@ use yii\httpclient\Client;
  * where <file_path> is taken from the response. It is guaranteed that the link will be valid for at least 1 hour.
  * When the link expires, a new one can be requested by calling getFile again.
  *
- * @method ServerResponse kickChatMember(array $data) Use this method to kick a user from a group,
+ * @method ServerResponse banChatMember(array $data) Use this method to kick a user from a group,
  * a supergroup or a channel. In the case of supergroups and channels, the user will not be able to return to the group
  * on their own using invite links, etc., unless unbanned first. The bot must be an administrator in the chat for
  * this to work and must have the appropriate admin rights. Returns True on success.
@@ -175,7 +175,7 @@ use yii\httpclient\Client;
  * except other bots. If the chat is a group or a supergroup and no administrators were appointed,
  * only the creator will be returned.
  *
- * @method ServerResponse getChatMembersCount(array $data) Use this method to get the number
+ * @method ServerResponse getChatMemberCount(array $data) Use this method to get the number
  * of members in a chat. Returns Int on success.
  *
  * @method ServerResponse getChatMember(array $data) Use this method to get information about a member
@@ -203,6 +203,10 @@ use yii\httpclient\Client;
  *
  * @method ServerResponse getMyCommands() Use this method to get the current list of the bot's commands.
  * Requires no parameters. Returns Array of BotCommand on success.
+ *
+ * @method ServerResponse deleteMyCommands() Use this method to delete the list of the bot's commands for the given
+ * scope and user language. After deletion, higher level commands will be shown to affected users.
+ * Returns True on success.
  *
  * @method ServerResponse editMessageText(array $data) Use this method to edit text and game messages sent
  * by the bot or via the bot (for inline bots). On success, if edited message is sent by the bot, the edited Message
@@ -355,7 +359,7 @@ class Request extends BaseObject
         'sendChatAction',
         'getUserProfilePhotos',
         'getFile',
-        'kickChatMember',
+        'banChatMember',
         'unbanChatMember',
         'restrictChatMember',
         'promoteChatMember',
@@ -371,7 +375,7 @@ class Request extends BaseObject
         'leaveChat',
         'getChat',
         'getChatAdministrators',
-        'getChatMembersCount',
+        'getChatMemberCount',
         'getChatMember',
         'setChatStickerSet',
         'deleteChatStickerSet',
@@ -379,6 +383,7 @@ class Request extends BaseObject
         'answerInlineQuery',
         'setMyCommands',
         'getMyCommands',
+        'deleteMyCommands',
         'editMessageText',
         'editMessageCaption',
         'editMessageMedia',
@@ -1039,5 +1044,33 @@ class Request extends BaseObject
                 Storage::insertTelegramRequest($action, $data);
             }
         }
+    }
+
+    /**
+     * Use this method to kick a user from a group, a supergroup or a channel. In the case of supergroups and channels, the user will not be able to return to the group on their own using invite links, etc., unless unbanned first. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns True on success.
+     *
+     * @deprecated
+     * @see Request::banChatMember()
+     *
+     * @param array $data
+     *
+     * @return ServerResponse
+     */
+    public function kickChatMember(array $data = []): ServerResponse
+    {
+        return self::banChatMember($data);
+    }
+
+    /**
+     * Use this method to get a list of administrators in a chat. On success, returns an Array of ChatMember objects
+     * that contains information about all chat administrators except other bots. If the chat is a group or a
+     * supergroup and no administrators were appointed, only the creator will be returned.
+     *
+     * @param array $data
+     * @return ServerResponse
+     */
+    public function getChatMembersCount(array $data = []): ServerResponse
+    {
+        return self::getChatMemberCount($data);
     }
 }

@@ -1,6 +1,9 @@
 <?php
 namespace onix\telegram\entities;
 
+use onix\telegram\entities\chatMember\ChatMember;
+use onix\telegram\entities\chatMember\Factory as ChatMemberFactory;
+
 /**
  * Class ChatMemberUpdated
  *
@@ -38,8 +41,8 @@ class ChatMemberUpdated extends Entity
         return [
             'chat' => Chat::class,
             'from' => User::class,
-            'oldChatMember' => ChatMember::class,
-            'newChatMember' => ChatMember::class,
+            'oldChatMember' => ChatMemberFactory::class,
+            'newChatMember' => ChatMemberFactory::class,
             'inviteLink' => ChatInviteLink::class,
         ];
     }

@@ -1,6 +1,8 @@
 <?php
 namespace onix\telegram\entities;
 
+use onix\telegram\entities\chatMember\ChatMember;
+use onix\telegram\entities\chatMember\Factory as ChatMemberFactory;
 use onix\telegram\entities\games\GameHighScore;
 
 /**
@@ -95,55 +97,62 @@ class ServerResponse extends Entity
      *
      * @param array  $result
      *
-     * @return Chat|ChatMember|File|Message|User|UserProfilePhotos|WebhookInfo
+     * BotDescription|BotName|BotShortDescription|Chat|ChatAdministratorRights|ChatMember|File|Message|MenuButton|Poll|SentWebAppMessage|StickerSet|User|UserProfilePhotos|WebhookInfo
+     * @return Chat|ChatMember|File|Message|Poll|StickerSet|User|UserProfilePhotos|WebhookInfo|Entity
+     * @noinspection PhpReturnDocTypeMismatchInspection
      */
     private function createResultObject(array $result)
     {
         $action = $this->telegram->request->getCurrentAction();
 
         $result_object_types = [
-            'getChat' => Chat::class,
-            'getChatMember' => ChatMember::class,
-            'getFile' => File::class,
-            'getMe' => User::class,
-            'getStickerSet' => StickerSet::class,
-            'getUserProfilePhotos' => UserProfilePhotos::class,
-            'getWebhookInfo' => WebhookInfo::class,
+            'getWebhookInfo'                  => WebhookInfo::class,
+            'getMe'                           => User::class,
+            'getUserProfilePhotos'            => UserProfilePhotos::class,
+            'getFile'                         => File::class,
+            'getChat'                         => Chat::class,
+            'getChatMember'                   => ChatMemberFactory::class,
+            //'getMyName'                       => BotName::class,
+            //'getMyDescription'                => BotDescription::class,
+            //'getMyShortDescription'           => BotShortDescription::class,
+            //'getChatMenuButton'               => MenuButtonFactory::class,
+            //'getMyDefaultAdministratorRights' => ChatAdministratorRights::class,
+            'getStickerSet'                   => StickerSet::class,
+            'stopPoll'                        => Poll::class,
+            //'answerWebAppQuery'               => SentWebAppMessage::class,
         ];
 
-        $object_class = array_key_exists($action, $result_object_types) ?
-            $result_object_types[$action] :
-            Message::class;
-
-        return new $object_class($result);
+        $object_class = $result_object_types[$action] ?? Message::class;
+        return Factory::resolveEntityClass($object_class, $result);
     }
 
     /**
      * Create and return the objects array of the received result
      *
-     * @param array  $result
-     *
-     * @return BotCommand[]|ChatMember[]|GameHighScore[]|Message[]|Update[]
+     * @param array  $results
+     * //BotCommand[]|ChatMember[]|GameHighScore[]|Message[]|Sticker[]|Update[]
+     * @return BotCommand[]|ChatMember[]|GameHighScore[]|Message[]|Sticker[]|Update[]
      */
-    private function createResultObjects(array $result)
+    private function createResultObjects(array $results)
     {
-        $results = [];
+        $objects = [];
         $action  = $this->telegram->request->getCurrentAction();
 
-        $result_object_types = [
-            'getMyCommands' => BotCommand::class,
-            'getChatAdministrators' => ChatMember::class,
-            'getGameHighScores' => GameHighScore::class,
-            'sendMediaGroup' => Message::class,
+       $result_object_types = [
+            'getUpdates'                => Update::class,
+            'getChatAdministrators'     => ChatMemberFactory::class,
+            'getForumTopicIconStickers' => Sticker::class,
+            'getMyCommands'             => BotCommand::class,
+            'getCustomEmojiStickers'    => Sticker::class,
+            'getGameHighScores'         => GameHighScore::class,
+            'sendMediaGroup'            => Message::class,
         ];
 
-        $object_class = array_key_exists($action, $result_object_types) ? $result_object_types[$action] : Update::class;
-
-        foreach ($result as $data) {
-            // We don't need to save the raw_data of the response object!
-            $results[] = new $object_class($data);
+        $object_class = $result_object_types[$action] ?? Update::class;
+        foreach ($results as $result) {
+            $objects[] = Factory::resolveEntityClass($object_class, $result);
         }
 
-        return $results;
+        return $objects;
     }
 }

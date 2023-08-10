@@ -3,9 +3,6 @@
 namespace onix\telegram\entities;
 
 use onix\telegram\Telegram;
-use Exception;
-use JsonSerializable;
-use Yii;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\Model;
@@ -20,7 +17,7 @@ use yii\helpers\Json;
  *
  * @property-read Telegram $telegram
  */
-abstract class Entity extends Model implements JsonSerializable
+abstract class Entity extends Model implements \JsonSerializable
 {
     /**
      * @var array attribute values indexed by attribute names
@@ -44,8 +41,7 @@ abstract class Entity extends Model implements JsonSerializable
      */
     public function getTelegram()
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return Yii::$app->get('telegram');
+        return \Yii::$app->get('telegram');
     }
 
     /**
@@ -62,7 +58,7 @@ abstract class Entity extends Model implements JsonSerializable
      * @param string $name the name of the attribute
      * @return bool whether the model has an attribute with the specified name.
      */
-    public function hasAttribute($name)
+    public function hasAttribute(string $name)
     {
         return isset($this->attributes[$name]) || in_array($name, $this->attributes(), true);
     }
@@ -74,7 +70,7 @@ abstract class Entity extends Model implements JsonSerializable
      * @param string $str String in camel case format
      * @return string $str Translated into underscore format
      */
-    protected function fromCamelCase($str)
+    protected function fromCamelCase(string $str)
     {
         $str[0] = strtolower($str[0]);
         return preg_replace_callback('/([A-Z])/', function ($c) {
@@ -90,7 +86,7 @@ abstract class Entity extends Model implements JsonSerializable
      * @param bool $capitalise_first_char If true, capitalise the first char in $str
      * @return string $str translated into camel caps
      */
-    protected function toCamelCase($str, $capitalise_first_char = false)
+    protected function toCamelCase(string $str, bool $capitalise_first_char = false)
     {
         if ($capitalise_first_char) {
             $str[0] = strtoupper($str[0]);
@@ -140,14 +136,14 @@ abstract class Entity extends Model implements JsonSerializable
                     $objects = [];
                     if (is_array($value)) {
                         foreach ($value as $param) {
-                            $objects[] = new $class($param);
+                            $objects[] = Factory::resolveEntityClass($class, $param);
                         }
                     }
 
                     return $objects;
                 }
 
-                return new $class($value);
+                return Factory::resolveEntityClass($class, $value);
             }
         }
 
@@ -179,19 +175,12 @@ abstract class Entity extends Model implements JsonSerializable
      * @param string $name the property name or the event name
      *
      * @return bool whether the property value is null
-     *
-     * @noinspection PhpWrongCatchClausesOrderInspection
-     * @noinspection PhpUndefinedClassInspection
-     * @noinspection PhpRedundantCatchClauseInspection
-     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function __isset($name)
     {
         try {
             return $this->__get($name) !== null;
-        } catch (\Throwable $t) {
-            return false;
-        } catch (Exception $e) {
+        } catch (\Throwable|\Exception $t) {
             return false;
         }
     }
@@ -220,9 +209,9 @@ abstract class Entity extends Model implements JsonSerializable
      *
      * @see hasAttribute()
      */
-    public function getAttribute($name)
+    public function getAttribute(string $name)
     {
-        return isset($this->attributes[$name]) ? $this->attributes[$name] : null;
+        return $this->attributes[$name] ?? null;
     }
 
     /**
@@ -235,7 +224,7 @@ abstract class Entity extends Model implements JsonSerializable
      *
      * @see hasAttribute()
      */
-    public function setAttribute($name, $value)
+    public function setAttribute(string $name, $value)
     {
         if ($this->hasAttribute($name)) {
             $this->attributes[$name] = $value;
@@ -305,7 +294,7 @@ abstract class Entity extends Model implements JsonSerializable
      *
      * @return string
      */
-    public static function escapeMarkdown($string)
+    public static function escapeMarkdown(string $string)
     {
         return str_replace(
             ['[', '`', '*', '_',],
@@ -323,7 +312,7 @@ abstract class Entity extends Model implements JsonSerializable
      *
      * @return string
      */
-    public static function escapeMarkdownV2($string)
+    public static function escapeMarkdownV2(string $string)
     {
         return str_replace(
             [
@@ -371,6 +360,7 @@ abstract class Entity extends Model implements JsonSerializable
     }
 
     public static function emoji($utf8emoji) {
+        /** @noinspection RegExpRedundantEscape */
         preg_replace_callback(
             '@\\\x([0-9a-fA-F]{2})@x',
             function ($captures) {
@@ -388,13 +378,13 @@ abstract class Entity extends Model implements JsonSerializable
      * Mention the user with the username otherwise print first and last name
      * if the $escape_markdown argument is true special characters are escaped from the output
      *
-     * @todo What about MarkdownV2?
-     *
      * @param bool $escape_markdown
      *
      * @return string|null
+     *@todo What about MarkdownV2?
+     *
      */
-    public function tryMention($escape_markdown = false)
+    public function tryMention(bool $escape_markdown = false)
     {
         //TryMention only makes sense for the User and Chat entity.
         if (!($this instanceof User || $this instanceof Chat)) {
