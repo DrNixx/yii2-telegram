@@ -233,6 +233,7 @@ abstract class Entity extends Model implements \JsonSerializable
         }
     }
 
+    #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         $data = [];
