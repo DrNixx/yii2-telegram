@@ -23,7 +23,7 @@ class InlineQuery extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['id', 'from', 'location', 'query', 'offset', 'chatType'];
     }
@@ -31,7 +31,7 @@ class InlineQuery extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'from' => User::class,

@@ -27,7 +27,7 @@ class InputTextMessageContent extends Entity implements InputMessageContent
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['messageText', 'parseMode', 'disableWebPagePreview'];
     }

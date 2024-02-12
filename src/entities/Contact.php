@@ -17,7 +17,7 @@ class Contact extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['phoneNumber', 'firstName', 'lastName', 'userId', 'vcard'];
     }

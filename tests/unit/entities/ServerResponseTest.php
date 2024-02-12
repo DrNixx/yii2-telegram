@@ -1,5 +1,5 @@
 <?php
-namespace tests\unit\entities;
+namespace onix\telegram\tests\unit\entities;
 
 use Codeception\Test\Unit;
 use onix\telegram\entities\File;

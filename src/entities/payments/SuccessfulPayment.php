@@ -23,7 +23,7 @@ class SuccessfulPayment extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return [
             'currency',
@@ -39,7 +39,7 @@ class SuccessfulPayment extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'orderInfo' => OrderInfo::class,

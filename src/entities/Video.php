@@ -14,7 +14,8 @@ namespace onix\telegram\entities;
  * @property-read int $height Video height as defined by sender
  * @property-read int $duration Duration of the video in seconds as defined by sender
  * @property-read PhotoSize $thumb Optional. Video thumbnail
- * @property-read string $mimeType Optional. Mime type of a file as defined by sender
+ * @property-read string $fileName Optional. Optional. Original filename as defined by sender
+ * @property-read string $mimeType Optional. Mime type of file as defined by sender
  * @property-read int $fileSize Optional. File size
  */
 class Video extends Entity
@@ -22,15 +23,15 @@ class Video extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
-        return ['fileId', 'fileUniqueId', 'width', 'height', 'duration', 'thumb', 'mimeType', 'fileSize'];
+        return ['fileId', 'fileUniqueId', 'width', 'height', 'duration', 'thumb', 'fileName', 'mimeType', 'fileSize'];
     }
     
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'thumb' => PhotoSize::class,

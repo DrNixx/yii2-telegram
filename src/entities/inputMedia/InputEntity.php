@@ -26,7 +26,7 @@ abstract class InputEntity extends Entity implements InputMedia
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['type', 'media', 'thumb', 'caption', 'parseMode'];
     }

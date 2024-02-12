@@ -1,52 +1,60 @@
 <?php
 namespace onix\telegram\models;
 
-use onix\data\ActiveRecordEx;
+use MongoDB\BSON\UTCDateTime;
 use yii\behaviors\TimestampBehavior;
-use yii\db\ActiveQuery;
-use yii\db\ActiveRecord;
-use yii\db\Expression;
+use yii\db\BaseActiveRecord;
+use yii\mongodb\ActiveRecord;
 
 /**
  * This is the model class for table "telegram.conversation".
  *
- * @property int $id Unique identifier for this entry
- * @property int|null $user_id Unique user identifier
- * @property int|null $chat_id Unique chat identifier
+ * @property object $_id Unique identifier for this entry
+ * @property int|null $userId Unique user identifier
+ * @property int|null $chatId Unique chat identifier
  * @property string $status Identifier of the message sent via the bot in inline mode, that originated the query
  * @property string $command Default command to execute
  * @property string|null $notes Data stored from command
- * @property string $created_at Entry date creation
- * @property string $updated_at Entry date update
- *
- * @property Chat $chat
- * @property User $user
+ * @property string $createdAt Entry date creation
+ * @property string $updatedAt Entry date update
  */
-class Conversation extends ActiveRecordEx
+class Conversation extends ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function collectionName(): array|string
     {
-        return 'telegram.conversation';
+        return 'telegram_conversation';
+    }
+
+    public function attributes(): array
+    {
+        return [
+            '_id',
+            'userId',
+            'chatId',
+            'status',
+            'command',
+            'notes',
+            'createdAt',
+            'updatedAt',
+        ];
     }
 
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
-        $now = (self::getDb()->driverName === 'pgsql') ? "timezone('GMT'::text, now())" : 'now()';
-
         return [
             [
                 'class' => TimestampBehavior::class,
                 'attributes' => [
-                    ActiveRecord::EVENT_BEFORE_INSERT => ['created_at', 'updated_at'],
-                    ActiveRecord::EVENT_BEFORE_UPDATE => ['updated_at'],
+                    BaseActiveRecord::EVENT_BEFORE_INSERT => ['createdAt', 'updatedAt'],
+                    BaseActiveRecord::EVENT_BEFORE_UPDATE => ['updatedAt'],
                 ],
-                'value' => new Expression($now),
+                'value' => new UTCDateTime(),
             ],
         ];
     }
@@ -54,58 +62,37 @@ class Conversation extends ActiveRecordEx
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
-            [['user_id', 'chat_id'], 'default', 'value' => null],
-            [['user_id', 'chat_id'], 'number'],
+            [['userId', 'chatId'], 'number'],
             [['notes'], 'string'],
-            [['created_at', 'updated_at'], 'safe'],
+            [['createdAt', 'updatedAt'], 'safe'],
             [['status'], 'string', 'max' => 15],
             [['command'], 'string', 'max' => 160],
             [
-                ['chat_id'],
+                ['chatId'],
                 'exist',
                 'skipOnError' => true,
                 'targetClass' => Chat::class,
-                'targetAttribute' => ['chat_id' => 'id']
+                'targetAttribute' => ['chatId' => '_id']
             ],
             [
-                ['user_id'],
+                ['userId'],
                 'exist',
                 'skipOnError' => true,
                 'targetClass' => User::class,
-                'targetAttribute' => ['user_id' => 'id']
+                'targetAttribute' => ['userId' => '_id']
             ],
         ];
-    }
-
-    /**
-     * Gets query for [[Chat]].
-     *
-     * @return ActiveQuery|ChatQuery
-     */
-    public function getChat()
-    {
-        return $this->hasOne(Chat::class, ['id' => 'chat_id']);
-    }
-
-    /**
-     * Gets query for [[User]].
-     *
-     * @return ActiveQuery|UserQuery
-     */
-    public function getUser()
-    {
-        return $this->hasOne(User::class, ['id' => 'user_id']);
     }
 
     /**
      * {@inheritdoc}
      * @return ConversationQuery the active query used by this AR class.
      */
-    public static function find($alias = null)
+    public static function find($alias = null): ConversationQuery
     {
-        return new ConversationQuery(get_called_class(), ['as' => $alias]);
+        return new ConversationQuery(get_called_class());
     }
 }

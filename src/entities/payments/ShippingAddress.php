@@ -22,7 +22,7 @@ class ShippingAddress extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['countryCode', 'state', 'city', 'streetLine1', 'streetLine2', 'postCode'];
     }

@@ -1,5 +1,5 @@
 <?php
-
+namespace onix\telegram\tests;
 
 /**
  * Inherited Methods

@@ -13,6 +13,7 @@ namespace onix\telegram\entities;
  * @property-read int $duration Duration of the audio in seconds as defined by sender
  * @property-read string $performer Optional. Performer of the audio as defined by sender or by audio tags
  * @property-read string $title Optional. Title of the audio as defined by sender or by audio tags
+ * @property-read string $fileName Optional. Original filename as defined by sender
  * @property-read string $mimeType Optional. MIME type of the file as defined by sender
  * @property-read int $fileSize Optional. File size
  * @property-read PhotoSize $thumb Optional. Thumbnail of the album cover to which the music file belongs
@@ -22,15 +23,15 @@ class Audio extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
-        return ['fileId', 'fileUniqueId', 'duration', 'performer', 'title', 'mimeType', 'fileSize', 'thumb'];
+        return ['fileId', 'fileUniqueId', 'duration', 'performer', 'title', 'fileName', 'mimeType', 'fileSize', 'thumb'];
     }
 
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'thumb' => PhotoSize::class,

@@ -1,5 +1,5 @@
 <?php
-namespace tests\unit\entities;
+namespace onix\telegram\tests\unit\entities;
 
 use onix\telegram\entities\Keyboard;
 use onix\telegram\entities\KeyboardButton;
@@ -9,13 +9,13 @@ class KeyboardTest extends \Codeception\Test\Unit
     public function testKeyboardDataMalformedField()
     {
         $kb = new Keyboard(['keyboard' => ['wrong']]);
-        expect('not parse invalid keyboard field', $kb->keyboard)->count(0);
+        expect($kb->keyboard)->arrayToHaveCount(0, 'not parse invalid keyboard field');
     }
 
     public function testKeyboardDataMalformedSubfield()
     {
         $kb = new Keyboard(['keyboard' => ['wrong']]);
-        expect('not parse invalid keyboard subfield', $kb->keyboard)->count(0);
+        expect($kb->keyboard)->arrayToHaveCount(0, 'not parse invalid keyboard subfield');
     }
 
     public function testKeyboardSingleButtonSingleRow()

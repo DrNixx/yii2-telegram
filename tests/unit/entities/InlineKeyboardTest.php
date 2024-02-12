@@ -1,5 +1,5 @@
 <?php
-namespace tests\unit\entities;
+namespace onix\telegram\tests\unit\entities;
 
 use onix\telegram\entities\InlineKeyboard;
 use onix\telegram\entities\InlineKeyboardButton;
@@ -22,13 +22,13 @@ class InlineKeyboardTest extends \Codeception\Test\Unit
     public function testInlineKeyboardDataMalformedField()
     {
         $kb = new InlineKeyboard(['inline_keyboard' => 'wrong']);
-        expect('not parse invalid keyboard field', $kb->inlineKeyboard)->count(0);
+        expect($kb->inlineKeyboard)->arrayToHaveCount(0, 'not parse invalid keyboard field');
     }
 
     public function testInlineKeyboardDataMalformedSubfield()
     {
         $kb = new InlineKeyboard(['inline_keyboard' => ['wrong']]);
-        expect('not parse invalid keyboard subfield', $kb->inlineKeyboard)->count(0);
+        expect($kb->inlineKeyboard)->arrayToHaveCount(0, 'not parse invalid keyboard subfield');
     }
 
     public function testInlineKeyboardSingleButtonSingleRow()

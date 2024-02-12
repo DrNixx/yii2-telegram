@@ -20,7 +20,7 @@ class Document extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['fileId', 'fileUniqueId', 'thumb', 'fileName', 'mimeType', 'fileSize'];
     }
@@ -28,7 +28,7 @@ class Document extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'thumb' => PhotoSize::class,

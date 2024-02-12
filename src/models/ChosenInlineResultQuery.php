@@ -1,25 +1,20 @@
 <?php
 namespace onix\telegram\models;
 
-use onix\data\ActiveQueryEx;
+use yii\mongodb\ActiveQuery;
 
 /**
  * This is the ActiveQuery class for [[ChosenInlineResult]].
  *
  * @see ChosenInlineResult
  */
-class ChosenInlineResultQuery extends ActiveQueryEx
+class ChosenInlineResultQuery extends ActiveQuery
 {
-    /*public function active()
-    {
-        return $this->andWhere('[[status]]=1');
-    }*/
-
     /**
      * {@inheritdoc}
      * @return ChosenInlineResult[]|array
      */
-    public function all($db = null)
+    public function all($db = null): array
     {
         return parent::all($db);
     }
@@ -28,7 +23,7 @@ class ChosenInlineResultQuery extends ActiveQueryEx
      * {@inheritdoc}
      * @return ChosenInlineResult|array|null
      */
-    public function one($db = null)
+    public function one($db = null): ?ChosenInlineResult
     {
         return parent::one($db);
     }

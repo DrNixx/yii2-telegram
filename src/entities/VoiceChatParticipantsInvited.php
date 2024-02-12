@@ -15,7 +15,7 @@ class VoiceChatParticipantsInvited extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return [
             'users'
@@ -25,7 +25,7 @@ class VoiceChatParticipantsInvited extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'users' => [User::class],

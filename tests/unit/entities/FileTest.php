@@ -1,5 +1,5 @@
 <?php
-namespace tests\tests\unit\entities;
+namespace onix\telegram\tests\unit\entities;
 
 use onix\telegram\entities\File;
 

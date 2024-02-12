@@ -1,0 +1,31 @@
+{
+  "update_id": 1,
+  "message": {
+    "message_id": 123,
+    "from": {
+      "id": 456,
+      "is_bot": false,
+      "first_name": "Mario",
+      "username": "Bros",
+      "language_code": "en"
+    },
+    "chat": {
+      "id": -456,
+      "title":"MyChat",
+      "type":"group"
+    },
+    "date": 1684984664,
+    "reply_to_message": {
+      "message_id":11,
+      "from":{"id":121,"first_name":"Myname","username":"mybot"},
+      "chat":{
+        "id": -456,
+        "title": "MyChat",
+        "type": "group"
+      },
+      "date":1684980664,
+      "text":"type some text"
+    },
+    "text": "Ciao"
+  }
+}

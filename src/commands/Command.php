@@ -206,7 +206,6 @@ abstract class Command extends BaseObject
      *
      * @return ServerResponse
      *
-     * @throws BaseException
      * @throws TelegramException
      */
     public function preExecute()

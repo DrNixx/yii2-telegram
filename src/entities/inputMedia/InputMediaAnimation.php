@@ -29,7 +29,7 @@ class InputMediaAnimation extends InputEntity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ArrayHelper::merge(
             parent::attributes(),

@@ -2,7 +2,6 @@
 namespace onix\telegram;
 
 use onix\telegram\models\Conversation as ConversationRepo;
-use Yii;
 use yii\base\BaseObject;
 use yii\base\Exception as BaseException;
 use yii\helpers\Json;
@@ -24,42 +23,42 @@ class Conversation extends BaseObject
      *
      * @var ConversationRepo|null
      */
-    protected $conversation;
+    protected ?ConversationRepo $conversation = null;
 
     /**
      * Notes stored inside the conversation
      *
-     * @var mixed
+     * @var mixed|null
      */
-    protected $protected_notes;
+    protected mixed $protected_notes = null;
 
     /**
      * Notes to be stored
      *
-     * @var mixed
+     * @var mixed|null
      */
-    public $notes;
+    public mixed $notes = null;
 
     /**
      * Telegram user id
      *
      * @var int
      */
-    public $user_id;
+    public int $user_id;
 
     /**
      * Telegram chat id
      *
      * @var int
      */
-    public $chat_id;
+    public int $chat_id;
 
     /**
      * Command to be executed if the conversation is active
      *
-     * @var string
+     * @var string|null
      */
-    public $command;
+    public ?string $command = null;
 
     /**
      * Conversation contructor to initialize a new conversation
@@ -74,7 +73,7 @@ class Conversation extends BaseObject
     /**
      * @throws BaseException
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -90,7 +89,7 @@ class Conversation extends BaseObject
      *
      * @return bool Always return true, to allow this method in an if statement.
      */
-    protected function clear()
+    protected function clear(): bool
     {
         $this->conversation = null;
         $this->protected_notes = null;
@@ -103,10 +102,8 @@ class Conversation extends BaseObject
      * Load the conversation from the database
      *
      * @return bool
-     *
-     * @throws BaseException
      */
-    protected function load()
+    protected function load(): bool
     {
         //Select an active conversation
         $conversation = Storage::conversationSelect($this->user_id, $this->chat_id);
@@ -124,7 +121,7 @@ class Conversation extends BaseObject
             }
 
             //Load the conversation notes
-            $this->protected_notes = Json::decode($this->conversation['notes'], true);
+            $this->protected_notes = Json::decode($this->conversation['notes']);
             $this->notes = $this->protected_notes;
         }
 
@@ -136,7 +133,7 @@ class Conversation extends BaseObject
      *
      * @return bool
      */
-    public function exists()
+    public function exists(): bool
     {
         return ($this->conversation !== null);
     }
@@ -148,7 +145,7 @@ class Conversation extends BaseObject
      *
      * @throws BaseException
      */
-    protected function start()
+    protected function start(): bool
     {
         if ($this->command && !$this->exists()) {
             if (Storage::conversationInsert($this->user_id, $this->chat_id, $this->command)) {
@@ -162,13 +159,11 @@ class Conversation extends BaseObject
     /**
      * Delete the current conversation
      *
-     * Currently the Conversation is not deleted but just set to 'stopped'
+     * Currently, the Conversation is not deleted but just set to 'stopped'
      *
      * @return bool
-     *
-     * @throws BaseException
      */
-    public function stop()
+    public function stop(): bool
     {
         return ($this->updateStatus('stopped') && $this->clear());
     }
@@ -177,10 +172,8 @@ class Conversation extends BaseObject
      * Cancel the current conversation
      *
      * @return bool
-     *
-     * @throws BaseException
      */
-    public function cancel()
+    public function cancel(): bool
     {
         return ($this->updateStatus('cancelled') && $this->clear());
     }
@@ -191,10 +184,8 @@ class Conversation extends BaseObject
      * @param string $status
      *
      * @return bool
-     *
-     * @throws BaseException
      */
-    protected function updateStatus($status)
+    protected function updateStatus(string $status): bool
     {
         if ($this->exists()) {
             $this->conversation->status = $status;
@@ -202,7 +193,7 @@ class Conversation extends BaseObject
             if ($this->conversation->save()) {
                 return true;
             } else {
-                Yii::warning(['Update conversation error', $this->conversation->errors], 'telegram');
+                \Yii::warning(['Update conversation error', $this->conversation->errors], 'telegram');
             }
         }
 
@@ -213,34 +204,32 @@ class Conversation extends BaseObject
      * Store the array/variable in the database with Json::encode() function
      *
      * @return bool
-     *
-     * @throws BaseException
      */
-    public function update()
+    public function update(): bool
     {
         if ($this->exists()) {
             $this->conversation->notes = Json::encode($this->notes, JSON_UNESCAPED_UNICODE);
             if ($this->conversation->save()) {
                 return true;
             } else {
-                Yii::warning(['Update conversation error', $this->conversation->errors], 'telegram');
+                \Yii::warning(['Update conversation error', $this->conversation->errors], 'telegram');
             }
         }
 
         return false;
     }
     
-    public function getUserId()
+    public function getUserId(): int
     {
         return $this->user_id;
     }
     
-    public function getChatId()
+    public function getChatId(): int
     {
         return $this->chat_id;
     }
 
-    public function getCommandText()
+    public function getCommandText(): ?string
     {
         return $this->command;
     }

@@ -1,5 +1,5 @@
 <?php
-namespace tests\unit\commands;
+namespace onix\telegram\tests\unit\commands;
 
 use Codeception\Test\Unit;
 use onix\telegram\commands\Command;

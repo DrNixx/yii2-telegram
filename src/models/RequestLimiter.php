@@ -1,32 +1,28 @@
 <?php
 namespace onix\telegram\models;
 
-use onix\data\ActiveRecordEx;
-use Yii;
+use MongoDB\BSON\UTCDateTime;
 use yii\behaviors\TimestampBehavior;
-use yii\db\ActiveQuery;
-use yii\db\ActiveRecord;
-use yii\db\Expression;
+use yii\db\BaseActiveRecord;
+use yii\mongodb\ActiveRecord;
 
 /**
  * This is the model class for table "telegram.request_limiter".
  *
- * @property int $id Unique identifier for this entry
- * @property int|null $chat_id Unique chat identifier
- * @property string|null $inline_message_id Identifier of the sent inline message
+ * @property object $_id Unique identifier for this entry
+ * @property int|null $chatId Unique chat identifier
+ * @property string|null $inlineMessageId Identifier of the sent inline message
  * @property string|null $method Request method
- * @property string $created_at Entry date creation
- *
- * @property Chat $chat
+ * @property UTCDateTime $date
  */
-class RequestLimiter extends ActiveRecordEx
+class RequestLimiter extends ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function collectionName(): array|string
     {
-        return 'telegram.request_limiter';
+        return 'telegram_request_limiter';
     }
 
     /**
@@ -34,63 +30,43 @@ class RequestLimiter extends ActiveRecordEx
      */
     public function behaviors()
     {
-        $now = (self::getDb()->driverName === 'pgsql') ? "timezone('GMT'::text, now())" : 'now()';
+        $now = new UTCDateTime();
 
         return [
             [
                 'class' => TimestampBehavior::class,
                 'attributes' => [
-                    ActiveRecord::EVENT_BEFORE_INSERT => ['created_at'],
-                    ActiveRecord::EVENT_BEFORE_UPDATE => [],
+                    BaseActiveRecord::EVENT_BEFORE_INSERT => ['date'],
+                    BaseActiveRecord::EVENT_BEFORE_UPDATE => [],
                 ],
-                'value' => new Expression($now),
+                'value' => $now,
             ],
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function rules()
+    public function attributes(): array
     {
-        return [
-            [['chat_id'], 'default', 'value' => null],
-            [['chat_id'], 'number'],
-            [['created_at'], 'safe'],
-            [['inline_message_id', 'method'], 'string', 'max' => 255],
-        ];
+        return ['_id', 'chatId', 'inlineMessageId', 'method', 'date'];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
+    public function rules(): array
     {
         return [
-            'id' => Yii::t('telegram', 'Unique identifier for this entry'),
-            'chat_id' => Yii::t('telegram', 'Unique chat identifier'),
-            'inline_message_id' => Yii::t('telegram', 'Identifier of the sent inline message'),
-            'method' => Yii::t('telegram', 'Request method'),
-            'created_at' => Yii::t('telegram', 'Entry date creation'),
+            [['chatId'], 'number'],
+            [['date'], 'safe'],
+            [['inlineMessage_id', 'method'], 'string', 'max' => 255],
         ];
-    }
-
-    /**
-     * Gets query for [[Chat]].
-     *
-     * @return ActiveQuery|ChatQuery
-     */
-    public function getChat()
-    {
-        return $this->hasOne(Chat::class, ['id' => 'chat_id']);
     }
 
     /**
      * {@inheritdoc}
      * @return RequestLimiterQuery the active query used by this AR class.
      */
-    public static function find($alias = null)
+    public static function find(): RequestLimiterQuery
     {
-        return new RequestLimiterQuery(get_called_class(), ['as' => $alias]);
+        return new RequestLimiterQuery(get_called_class());
     }
 }

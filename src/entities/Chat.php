@@ -48,7 +48,7 @@ class Chat extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return [
             'id',
@@ -74,7 +74,7 @@ class Chat extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'photo' => ChatPhoto::class,
@@ -102,7 +102,7 @@ class Chat extends Entity
      *
      * @return string|null
      */
-    public function tryMention(bool $escape_markdown = false)
+    public function tryMention(bool $escape_markdown = false): ?string
     {
         if ($this->isPrivateChat()) {
             return parent::tryMention($escape_markdown);

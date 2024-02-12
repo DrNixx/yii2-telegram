@@ -18,7 +18,7 @@ class Venue extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['location', 'title', 'address', 'foursquareId', 'foursquareType'];
     }
@@ -26,7 +26,7 @@ class Venue extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'location' => Location::class,

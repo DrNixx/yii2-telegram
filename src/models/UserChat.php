@@ -1,81 +1,62 @@
 <?php
 namespace onix\telegram\models;
 
-use onix\data\ActiveRecordEx;
 use yii\db\ActiveQuery;
+use yii\mongodb\ActiveRecord;
 
 /**
  * This is the model class for table "telegram.user_chat".
  *
- * @property int $user_id Unique user identifier
- * @property int $chat_id Unique user or chat identifier
- *
- * @property Chat $chat
- * @property User $user
+ * @property int $userId Unique user identifier
+ * @property int $chatId Unique user or chat identifier
  */
-class UserChat extends ActiveRecordEx
+class UserChat extends ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function collectionName(): array|string
     {
-        return 'telegram.user_chat';
+        return 'telegram_user_chat';
+    }
+
+    public function attributes(): array
+    {
+        return ['_id', 'userId', 'chatId'];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
-            [['user_id', 'chat_id'], 'required'],
-            [['user_id', 'chat_id'], 'default', 'value' => null],
-            [['user_id', 'chat_id'], 'number'],
-            [['user_id', 'chat_id'], 'unique', 'targetAttribute' => ['user_id', 'chat_id']],
+            [['userId', 'chatId'], 'required'],
+            [['userId', 'chatId'], 'integer'],
+            [['userId', 'chatId'], 'unique', 'targetAttribute' => ['userId', 'chatId']],
             [
-                ['chat_id'],
+                ['chatId'],
                 'exist',
                 'skipOnError' => true,
                 'targetClass' => Chat::class,
-                'targetAttribute' => ['chat_id' => 'id']
+                'targetAttribute' => ['chatId' => '_id']
             ],
             [
-                ['user_id'],
+                ['userId'],
                 'exist',
                 'skipOnError' => true,
                 'targetClass' => User::class,
-                'targetAttribute' => ['user_id' => 'id']
+                'targetAttribute' => ['userId' => '_id']
             ],
         ];
-    }
-
-    /**
-     * Gets query for [[Chat]].
-     *
-     * @return ActiveQuery|ChatQuery
-     */
-    public function getChat()
-    {
-        return $this->hasOne(Chat::class, ['id' => 'chat_id']);
-    }
-
-    /**
-     * Gets query for [[User]].
-     *
-     * @return ActiveQuery|UserQuery
-     */
-    public function getUser()
-    {
-        return $this->hasOne(User::class, ['id' => 'user_id']);
     }
 
     /**
      * {@inheritdoc}
      * @return UserChatQuery the active query used by this AR class.
      */
-    public static function find($alias = null)
+    public static function find(): UserChatQuery
     {
-        return new UserChatQuery(get_called_class(), ['as' => $alias]);
+        return new UserChatQuery(get_called_class());
     }
 }

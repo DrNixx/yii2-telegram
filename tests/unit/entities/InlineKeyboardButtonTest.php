@@ -1,5 +1,5 @@
 <?php
-namespace tests\unit\entities;
+namespace onix\telegram\tests\unit\entities;
 
 use onix\telegram\entities\games\CallbackGame;
 use onix\telegram\entities\InlineKeyboardButton;

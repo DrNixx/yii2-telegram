@@ -1,8 +1,8 @@
 <?php
-namespace tests\unit\fixtures;
+namespace onix\telegram\tests\fixtures;
 
 use onix\telegram\models\Message;
-use yii\test\ActiveFixture;
+use yii\mongodb\ActiveFixture;
 
 class MessageFixture extends ActiveFixture
 {

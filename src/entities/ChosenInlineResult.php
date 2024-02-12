@@ -18,14 +18,9 @@ namespace onix\telegram\entities;
 class ChosenInlineResult extends Entity
 {
     /**
-     * @var int
-     */
-    public $chosen_inline_result_id;
-
-    /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['resultId', 'from', 'location', 'inlineMessageId', 'query'];
     }
@@ -33,7 +28,7 @@ class ChosenInlineResult extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'from' => User::class,

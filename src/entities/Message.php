@@ -123,7 +123,7 @@ use onix\telegram\entities\payments\SuccessfulPayment;
  * @property-read InlineKeyboard $replyMarkup Optional. Inline keyboard attached to the message. login_url buttons are
  * represented as ordinary url buttons.
  *
- * @property string $editedMessageId
+ * @property object $editedMessageId
  *
  * @property-read string $command
  * @property-read string $fullCommand
@@ -134,7 +134,7 @@ class Message extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return [
             'messageId',
@@ -207,7 +207,7 @@ class Message extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'from' => User::class,

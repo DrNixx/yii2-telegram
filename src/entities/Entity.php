@@ -6,6 +6,8 @@ use onix\telegram\Telegram;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\Model;
+use yii\base\UnknownPropertyException;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
 
 /**
@@ -39,16 +41,16 @@ abstract class Entity extends Model implements \JsonSerializable
      *
      * @throws InvalidConfigException
      */
-    public function getTelegram()
+    public function getTelegram(): Telegram
     {
         return \Yii::$app->get('telegram');
     }
 
     /**
      * Returns the list of attribute names.
-     * @return array list of attribute names.
+     * @return string[] list of attribute names.
      */
-    public function attributes()
+    public function attributes(): array
     {
         return [];
     }
@@ -58,7 +60,7 @@ abstract class Entity extends Model implements \JsonSerializable
      * @param string $name the name of the attribute
      * @return bool whether the model has an attribute with the specified name.
      */
-    public function hasAttribute(string $name)
+    public function hasAttribute(string $name): bool
     {
         return isset($this->attributes[$name]) || in_array($name, $this->attributes(), true);
     }
@@ -70,7 +72,7 @@ abstract class Entity extends Model implements \JsonSerializable
      * @param string $str String in camel case format
      * @return string $str Translated into underscore format
      */
-    protected function fromCamelCase(string $str)
+    protected function fromCamelCase(string $str): string
     {
         $str[0] = strtolower($str[0]);
         return preg_replace_callback('/([A-Z])/', function ($c) {
@@ -86,7 +88,7 @@ abstract class Entity extends Model implements \JsonSerializable
      * @param bool $capitalise_first_char If true, capitalise the first char in $str
      * @return string $str translated into camel caps
      */
-    protected function toCamelCase(string $str, bool $capitalise_first_char = false)
+    protected function toCamelCase(string $str, bool $capitalise_first_char = false): string
     {
         if ($capitalise_first_char) {
             $str[0] = strtoupper($str[0]);
@@ -98,6 +100,17 @@ abstract class Entity extends Model implements \JsonSerializable
     }
 
     /**
+     * Return true if attribute is subEntity
+     * @param string $name
+     * @return bool
+     */
+    public function isSubEntity(string $name): bool
+    {
+        $sub_entities = $this->subEntities();
+        return isset($sub_entities[$name]);
+    }
+
+    /**
      * PHP getter magic method.
      * This method is overridden so that attributes and related objects can be accessed like properties.
      *
@@ -105,9 +118,9 @@ abstract class Entity extends Model implements \JsonSerializable
      *
      * @return mixed property value
      *
-     * @see getAttribute()
+     * @throws UnknownPropertyException
      *
-     * @noinspection PhpDocMissingThrowsInspection
+     * @see getAttribute()
      */
     public function __get($name)
     {
@@ -120,7 +133,6 @@ abstract class Entity extends Model implements \JsonSerializable
                 return null;
             }
 
-            /** @noinspection PhpUnhandledExceptionInspection */
             $value = parent::__get($name);
         }
 
@@ -156,7 +168,7 @@ abstract class Entity extends Model implements \JsonSerializable
      * @param string $name property name
      * @param mixed $value property value
      *
-     * @noinspection PhpDocMissingThrowsInspection
+     * @throws UnknownPropertyException
      */
     public function __set($name, $value)
     {
@@ -164,8 +176,16 @@ abstract class Entity extends Model implements \JsonSerializable
         if ($this->hasAttribute($propName)) {
             $this->attributes[$propName] = $value;
         } else {
-            /** @noinspection PhpUnhandledExceptionInspection */
-            parent::__set($name, $value);
+            try {
+                parent::__set($name, $value);
+            } catch (UnknownPropertyException $e) {
+                if (YII_DEBUG) {
+                    throw $e;
+                } else {
+                    \Yii::warning($e->getMessage());
+                }
+
+            }
         }
     }
 
@@ -180,7 +200,7 @@ abstract class Entity extends Model implements \JsonSerializable
     {
         try {
             return $this->__get($name) !== null;
-        } catch (\Throwable|\Exception $t) {
+        } catch (\Throwable|\Exception) {
             return false;
         }
     }
@@ -209,7 +229,7 @@ abstract class Entity extends Model implements \JsonSerializable
      *
      * @see hasAttribute()
      */
-    public function getAttribute(string $name)
+    public function getAttribute(string $name): mixed
     {
         return $this->attributes[$name] ?? null;
     }
@@ -224,7 +244,7 @@ abstract class Entity extends Model implements \JsonSerializable
      *
      * @see hasAttribute()
      */
-    public function setAttribute(string $name, $value)
+    public function setAttribute(string $name, mixed $value): void
     {
         if ($this->hasAttribute($name)) {
             $this->attributes[$name] = $value;
@@ -233,12 +253,28 @@ abstract class Entity extends Model implements \JsonSerializable
         }
     }
 
+    public static function serializeValue($value)
+    {
+        if ($value instanceof Entity) {
+            return $value->jsonSerialize();
+        } elseif (is_array($value)) {
+            $newValues = [];
+            foreach ($value as $k => $item) {
+                $newValues[$k] = self::serializeValue($item);
+            }
+
+            return $newValues;
+        }
+
+        return $value;
+    }
+
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         $data = [];
         foreach ($this->attributes as $key => $value) {
-            $data[$this->fromCamelCase($key)] = $value;
+            $data[$this->fromCamelCase($key)] = self::serializeValue($value);
         }
 
         return $data;
@@ -249,7 +285,7 @@ abstract class Entity extends Model implements \JsonSerializable
      *
      * @return string
      */
-    public function toJson()
+    public function toJson(): string
     {
         return Json::encode($this);
     }
@@ -269,7 +305,7 @@ abstract class Entity extends Model implements \JsonSerializable
      *
      * @param array $data
      */
-    protected function assignMemberVariables(array $data)
+    protected function assignMemberVariables(array $data): void
     {
         foreach ($data as $key => $value) {
             $this->$key = $value;
@@ -281,7 +317,7 @@ abstract class Entity extends Model implements \JsonSerializable
      *
      * @return array
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [];
     }
@@ -295,7 +331,7 @@ abstract class Entity extends Model implements \JsonSerializable
      *
      * @return string
      */
-    public static function escapeMarkdown(string $string)
+    public static function escapeMarkdown(string $string): string
     {
         return str_replace(
             ['[', '`', '*', '_',],
@@ -313,7 +349,7 @@ abstract class Entity extends Model implements \JsonSerializable
      *
      * @return string
      */
-    public static function escapeMarkdownV2(string $string)
+    public static function escapeMarkdownV2(string $string): string
     {
         return str_replace(
             [
@@ -385,7 +421,7 @@ abstract class Entity extends Model implements \JsonSerializable
      *@todo What about MarkdownV2?
      *
      */
-    public function tryMention(bool $escape_markdown = false)
+    public function tryMention(bool $escape_markdown = false): ?string
     {
         //TryMention only makes sense for the User and Chat entity.
         if (!($this instanceof User || $this instanceof Chat)) {
@@ -410,5 +446,15 @@ abstract class Entity extends Model implements \JsonSerializable
         }
 
         return ($is_username ? '@' : '') . $name;
+    }
+
+    public static function getScalarAttributes(array $base, array $excludes = []): array
+    {
+        $obj = new static([]);
+        $all = $obj->attributes();
+        // $sub = array_keys($obj->subEntities());
+        // $own = array_filter(array_diff($all, $sub), function ($v) { return $v !== 'id'; });
+        $own = array_diff($all, $excludes);
+        return ArrayHelper::merge($base, $own);
     }
 }

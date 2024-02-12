@@ -1,11 +1,21 @@
 <?php
+namespace onix\telegram\tests\unit;
 
-use onix\telegram\exceptions\TelegramException;
 use onix\telegram\Telegram;
+use onix\telegram\tests\fixtures\UpdatesFixture;
 use yii\base\InvalidConfigException;
 
 class TelegramTest extends \Codeception\Test\Unit
 {
+    public function _fixtures()
+    {
+        return [
+            'updates' => [
+                'class' => UpdatesFixture::class
+            ]
+        ];
+    }
+
     public function testNewInstanceWithoutApiKeyParam()
     {
         $this->expectException(InvalidConfigException::class);
@@ -23,7 +33,8 @@ class TelegramTest extends \Codeception\Test\Unit
     public function testEnableAdmins()
     {
         /** @var Telegram $tg */
-        $tg = Yii::$app->telegram;
+        /** @noinspection PhpUndefinedFieldInspection */
+        $tg = \Yii::$app->telegram;
 
         $this->assertEmpty($tg->getAdminList());
 
@@ -51,10 +62,11 @@ class TelegramTest extends \Codeception\Test\Unit
     public function testGetCommandsList()
     {
         /** @var Telegram $tg */
-        $tg = Yii::$app->telegram;
+        /** @noinspection PhpUndefinedFieldInspection */
+        $tg = \Yii::$app->telegram;
 
         $commands = $tg->getCommandsList();
-        $this->assertIsArray($commands);
-        $this->assertNotCount(0, $commands);
+        verify($commands)->isArray();
+        verify($commands)->arrayNotCount(0);
     }
 }

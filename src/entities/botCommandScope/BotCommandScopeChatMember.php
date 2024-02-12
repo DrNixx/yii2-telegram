@@ -32,7 +32,7 @@ class BotCommandScopeChatMember extends BotCommandScope
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ArrayHelper::merge(parent::attributes(), ['chatId', 'userId']);
     }

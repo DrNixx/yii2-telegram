@@ -16,7 +16,7 @@ abstract class ChatMember extends Entity implements IChatMember
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['status', 'user'];
     }
@@ -24,7 +24,7 @@ abstract class ChatMember extends Entity implements IChatMember
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'user' => User::class,

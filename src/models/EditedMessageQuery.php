@@ -1,25 +1,20 @@
 <?php
 namespace onix\telegram\models;
 
-use onix\data\ActiveQueryEx;
+use yii\mongodb\ActiveQuery;
 
 /**
  * This is the ActiveQuery class for [[EditedMessage]].
  *
  * @see EditedMessage
  */
-class EditedMessageQuery extends ActiveQueryEx
+class EditedMessageQuery extends ActiveQuery
 {
-    /*public function active()
-    {
-        return $this->andWhere('[[status]]=1');
-    }*/
-
     /**
      * {@inheritdoc}
      * @return EditedMessage[]|array
      */
-    public function all($db = null)
+    public function all($db = null): array
     {
         return parent::all($db);
     }
@@ -28,7 +23,7 @@ class EditedMessageQuery extends ActiveQueryEx
      * {@inheritdoc}
      * @return EditedMessage|array|null
      */
-    public function one($db = null)
+    public function one($db = null): ?EditedMessage
     {
         return parent::one($db);
     }

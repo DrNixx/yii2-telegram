@@ -28,7 +28,7 @@ class CallbackQuery extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['id', 'from', 'message', 'inlineMessageId', 'chatInstance', 'data', 'gameShortName'];
     }
@@ -36,7 +36,7 @@ class CallbackQuery extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'from' => User::class,
@@ -51,7 +51,7 @@ class CallbackQuery extends Entity
      *
      * @return ServerResponse
      */
-    public function answer(array $data = [])
+    public function answer(array $data = []): ServerResponse
     {
         return $this->telegram->request->answerCallbackQuery(array_merge([
             'callback_query_id' => $this->id,

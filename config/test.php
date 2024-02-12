@@ -2,6 +2,7 @@
 $params = require __DIR__ . '/params.php';
 
 Yii::setAlias('@tests', dirname(__DIR__) . '/tests');
+Yii::setAlias('@onix/telegram/tests', dirname(__DIR__) . '/tests');
 Yii::setAlias('@onix/telegram', dirname(__DIR__) . '/src');
 
 /**
@@ -22,6 +23,11 @@ return [
             'username' => 'test',
             'password' => 'test',
             'charset' => 'utf8',
+        ],
+
+        'mongodb' => [
+            'class' => '\yii\mongodb\Connection',
+            'dsn' => 'mongodb://127.0.0.1:27017/telegram_test',
         ],
 
         'cache' => [
