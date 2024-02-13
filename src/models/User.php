@@ -16,6 +16,11 @@ use yii\helpers\ArrayHelper;
  * @property string|null $lastName User's or bot's last name
  * @property string|null $username User's or bot's last username
  * @property string|null $languageCode IETF language tag of the user's language
+ * @property bool $canJoinGroups Optional. True, if the bot can be invited to groups. Returned only in getMe
+ * @property bool $canReadAllGroupMessages Optional. True, if privacy mode is disabled for the bot
+ * @property bool $isPremium Optional. True, if this user is a Telegram Premium user
+ * @property bool $addedToAttachmentMenu Optional. True, if this user added the bot to the attachment menu
+ * @property bool $supportsInlineQueries Optional. True, if the bot supports inline queries. Returned only in getMe
  */
 class User extends TelegramActiveRecord
 {
@@ -38,7 +43,15 @@ class User extends TelegramActiveRecord
     {
         return ArrayHelper::merge(parent::rules(), [
             [['userId'], 'integer'],
-            [['isBot'], 'boolean'],
+            [
+                [
+                    'isBot',
+                    'canJoinGroups',
+                    'canReadAllGroupMessages',
+                    'isPremium',
+                    'addedToAttachmentMenu',
+                    'supportsInlineQueries'
+                ], 'boolean'],
             [['firstName', 'lastName'], 'string', 'max' => 255],
             [['username'], 'string', 'max' => 191],
             [['languageCode'], 'string', 'max' => 10],

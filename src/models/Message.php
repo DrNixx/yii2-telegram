@@ -11,6 +11,7 @@ use onix\telegram\entities\games\Game;
 use onix\telegram\entities\InlineKeyboard;
 use onix\telegram\entities\Location;
 use onix\telegram\entities\Message as MessageEntity;
+use onix\telegram\entities\MessageAutoDeleteTimerChanged;
 use onix\telegram\entities\MessageEntity as MessageEntityEntity;
 use onix\telegram\entities\Poll as PollEntity;
 use onix\telegram\entities\Sticker;
@@ -97,7 +98,7 @@ use yii\helpers\ArrayHelper;
  * @property string|null $proximityAlertTriggered Service message. A user in the chat triggered another user's
  * proximity alert while sharing Live Location.
  *
- * @property string|null $messageAutoDeleteTimerChanged MessageAutoDeleteTimerChanged object. Message is a service
+ * @property MessageAutoDeleteTimerChanged|null $messageAutoDeleteTimerChanged MessageAutoDeleteTimerChanged object. Message is a service
  * message: auto-delete timer settings changed in the chat
  *
  * @property string|null $voiceChatStarted VoiceChatStarted object. Message is a service message: voice chat started
@@ -193,6 +194,17 @@ class Message extends TelegramActiveRecord
                     'poll',
                     'dice',
                     'replyMarkup',
+                    'newChatPhoto',
+                    'newChatMembers',
+                    'messageAutoDeleteTimerChanged',
+                    'pinnedMessage',
+                    'invoice',
+                    'successfulPayment',
+                    'passportData',
+                    'proximityAlertTriggered',
+                    'voiceChatStarted',
+                    'voiceChatEnded',
+                    'voiceChatParticipantsInvited',
                 ], 'safe'
             ],
             [
@@ -203,17 +215,7 @@ class Message extends TelegramActiveRecord
                     'authorSignature',
                     'text',
                     'caption',
-                    'newChatPhoto',
-                    'pinnedMessage',
-                    'invoice',
-                    'successfulPayment',
                     'connectedWebsite',
-                    'passportData',
-                    'proximityAlertTriggered',
-                    'messageAutoDeleteTimerChanged',
-                    'voiceChatStarted',
-                    'voiceChatEnded',
-                    'voiceChatParticipantsInvited',
                 ],
                 'string'
             ],
@@ -232,7 +234,6 @@ class Message extends TelegramActiveRecord
                 'value' => false
             ],
             [['newChatTitle'], 'string', 'max' => 255],
-            [['newChatMembers'], 'safe'],
             [['chatId', 'id'], 'unique', 'targetAttribute' => ['chatId', 'id']],
             [
                 ['replyToChat', 'replyToMessage'],

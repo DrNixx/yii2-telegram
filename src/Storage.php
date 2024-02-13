@@ -4,6 +4,7 @@ namespace onix\telegram;
 use MongoDB\BSON\UTCDateTime;
 use onix\telegram\entities\CallbackQuery;
 use onix\telegram\entities\Chat;
+use onix\telegram\entities\ChatJoinRequest;
 use onix\telegram\entities\ChatMemberUpdated;
 use onix\telegram\entities\ChosenInlineResult;
 use onix\telegram\entities\EditedChannelPost;
@@ -20,6 +21,7 @@ use onix\telegram\entities\User;
 use onix\telegram\exceptions\TelegramException;
 use onix\telegram\models\CallbackQuery as CallbackQueryRepo;
 use onix\telegram\models\Chat as ChatRepo;
+use onix\telegram\models\ChatJoinRequest as ChatJoinRequestRepo;
 use onix\telegram\models\ChatMemberUpdated as ChatMemberUpdatedRepo;
 use onix\telegram\models\ChosenInlineResult as ChosenInlineResultRepo;
 use onix\telegram\models\Conversation as ConversationRepo;
@@ -208,67 +210,17 @@ class Storage
      *
      * @throws TelegramException
      */
-    protected static function telegramUpdateInsert(
-        int $update_id,
-        ?int $chat_id = null,
-        ?int $message_id = null,
-        ?object $edited_message_id = null,
-        ?int $channel_post_id = null,
-        ?object $edited_channel_post_id = null,
-        ?string $inline_query_id = null,
-        ?string $chosen_inline_result_id = null,
-        ?string $callback_query_id = null,
-        ?string $shipping_query_id = null,
-        ?string $pre_checkout_query_id = null,
-        ?string $poll_id = null,
-        ?object $poll_answer_poll_id = null,
-        ?object $my_chat_member_updated_id = null,
-        ?object $chat_member_updated_id = null
-    ): bool {
-        if (($message_id === null) &&
-            ($edited_message_id === null) &&
-            ($channel_post_id === null) &&
-            ($edited_channel_post_id === null) &&
-            ($inline_query_id === null) &&
-            ($chosen_inline_result_id === null) &&
-            ($callback_query_id === null) &&
-            ($shipping_query_id === null) &&
-            ($pre_checkout_query_id === null) &&
-            ($poll_id === null) &&
-            ($poll_answer_poll_id === null) &&
-            ($my_chat_member_updated_id === null) &&
-            ($chat_member_updated_id === null)
-        ) {
+    protected static function telegramUpdateInsert(TelegramUpdateRepo $model): bool
+    {
+        if (count($model->dirtyAttributes) <= 1) {
             throw new TelegramException('All update fields is null');
         }
 
-        $data = [
-            '_id' => $update_id,
-            'chatId' => $chat_id,
-            'messageId' => $message_id,
-            'editedMessageId' => $edited_message_id,
-            'channelPostId' => $channel_post_id,
-            'editedChannelPostId' => $edited_channel_post_id,
-            'inlineQueryId' => $inline_query_id,
-            'chosenInlineResultId' => $chosen_inline_result_id,
-            'callbackQueryId' => $callback_query_id,
-            'shippingQueryId' => $shipping_query_id,
-            'preCheckoutQueryId' => $pre_checkout_query_id,
-            'pollId' => $poll_id,
-            'pollAnswerId' => $poll_answer_poll_id,
-            'myChatMemberId' => $my_chat_member_updated_id,
-            'chatMemberId' => $chat_member_updated_id,
-        ];
-
-        \Yii::debug(['Try insert', $data], 'telegram');
-
-        $update = new TelegramUpdateRepo($data);
-
-        $result = $update->save();
+        $result = $model->save();
         if (!$result) {
-            \Yii::warning(['Insert updates error', $update], 'telegram');
+            \Yii::warning(['Insert updates error', $model], 'telegram');
             if (YII_DEBUG) {
-                throw new TelegramException(self::getRepoError('Insert updates error', $update));
+                throw new TelegramException(self::getRepoError('Insert updates error', $model));
             }
         }
 
@@ -278,25 +230,55 @@ class Storage
 
 
     /**
-     * @param ChatMemberUpdated $chat_member
+     * @param ChatMemberUpdated $entity
      *
      * @return object|null
      *
      * @throws TelegramException
      */
-    private static function chatMemberUpdatedInsert(ChatMemberUpdated $chat_member): ?object
+    private static function chatMemberUpdatedInsert(ChatMemberUpdated $entity): ?object
     {
-        $chat = $chat_member->chat;
+        $chat = $entity->chat;
         self::chatInsert($chat);
 
-        $user = $chat_member->from;
+        $user = $entity->from;
         self::userUpsert($user);
 
         $repo = new ChatMemberUpdatedRepo();
-        $repo->assign($chat_member);
-        $repo->chatId = $chat_member->chat->id;
-        $repo->userId = $chat_member->from->id;
-        $repo->date = self::getTimestamp($chat_member->date);
+        $repo->assign($entity);
+        $repo->chatId = $entity->chat->id;
+        $repo->userId = $entity->from->id;
+        $repo->date = self::getTimestamp($entity->date);
+
+        $result = $repo->save();
+        if (!$result) {
+            \Yii::warning(['Insert updates error', $repo], 'telegram');
+            return null;
+        }
+
+        return $repo->_id;
+    }
+
+    /**
+     * @param ChatMemberUpdated $entity
+     *
+     * @return object|null
+     *
+     * @throws TelegramException
+     */
+    private static function chatJoinRequestInsert(ChatJoinRequest $entity): ?object
+    {
+        $chat = $entity->chat;
+        self::chatInsert($chat);
+
+        $user = $entity->from;
+        self::userUpsert($user);
+
+        $repo = new ChatJoinRequestRepo();
+        $repo->assign($entity);
+        $repo->chatId = $entity->chat->id;
+        $repo->userId = $entity->from->id;
+        $repo->date = self::getTimestamp($entity->date);
 
         $result = $repo->save();
         if (!$result) {
@@ -492,78 +474,52 @@ class Storage
      */
     public static function insertUpdateRequest(Update $update): bool
     {
-        $chat_id                 = null;
-        $message_id              = null;
-        $edited_message_id       = null;
-        $channel_post_id         = null;
-        $edited_channel_post_id  = null;
-        $inline_query_id         = null;
-        $chosen_inline_result_id = null;
-        $callback_query_id       = null;
-        $shipping_query_id       = null;
-        $pre_checkout_query_id   = null;
-        $poll_id                 = null;
-        $poll_answer_poll_id     = null;
-        $my_chat_member_updated_id = null;
-        $chat_member_updated_id  = null;
+        $repo = new TelegramUpdateRepo();
+        $repo->_id = $update->updateId;
 
         if (($message = $update->message) && self::messageRequestInsert($message)) {
-            $chat_id = $message->chat->id;
-            $message_id = $message->messageId;
+            $repo->chatId = $message->chat->id;
+            $repo->messageId = $message->messageId;
         } elseif (($edited_message = $update->editedMessage) && self::editedMessageRequestInsert($edited_message)) {
-            $chat_id = $edited_message->chat->id;
-            $edited_message_id = $edited_message->editedMessageId;
+            $repo->chatId = $edited_message->chat->id;
+            $repo->editedMessageId = $edited_message->editedMessageId;
         } elseif (($channel_post = $update->channelPost) && self::messageRequestInsert($channel_post)) {
-            $chat_id         = $channel_post->chat->id;
-            $channel_post_id = $channel_post->messageId;
+            $repo->chatId         = $channel_post->chat->id;
+            $repo->channelPostId = $channel_post->messageId;
         } elseif (($edited_channel_post = $update->editedChannelPost)
             && self::editedMessageRequestInsert($edited_channel_post)
         ) {
-            $chat_id = $edited_channel_post->chat->id;
-            $edited_channel_post_id = $edited_channel_post->editedMessageId;
+            $repo->chatId = $edited_channel_post->chat->id;
+            $repo->editedChannelPostId = $edited_channel_post->editedMessageId;
         } elseif (($inline_query = $update->inlineQuery) && self::inlineQueryRequestInsert($inline_query)) {
-            $inline_query_id = $inline_query->id;
+            $repo->inlineQueryId = $inline_query->id;
         } elseif (($chosen_inline_result = $update->chosenInlineResult) &&
             self::chosenInlineResultRequestInsert($chosen_inline_result)
         ) {
-            $chosen_inline_result_id = $chosen_inline_result->resultId;
+            $repo->chosenInlineResultId = $chosen_inline_result->resultId;
         } elseif (($callback_query = $update->callbackQuery)) {
-            $callback_query_id = self::callbackQueryRequestInsert($callback_query);
+            $repo->callbackQueryId = self::callbackQueryRequestInsert($callback_query);
         } elseif (($shipping_query = $update->shippingQuery) && self::shippingQueryRequestInsert($shipping_query)) {
-            $shipping_query_id = $shipping_query->id;
+            $repo->shippingQueryId = $shipping_query->id;
         } elseif (($pre_checkout_query = $update->preCheckoutQuery) &&
             self::preCheckoutQueryRequestInsert($pre_checkout_query)
         ) {
-            $pre_checkout_query_id = $pre_checkout_query->id;
+            $repo->preCheckoutQueryId = $pre_checkout_query->id;
         } elseif (($poll = $update->poll) && self::pollRequestInsert($poll)) {
-            $poll_id = $poll->id;
+            $repo->pollId = $poll->id;
         } elseif (($poll_answer = $update->pollAnswer)) {
-            $poll_answer_poll_id = self::pollAnswerRequestInsert($poll_answer);
+            $repo->pollAnswerId = self::pollAnswerRequestInsert($poll_answer);
         } elseif ($my_chat_member = $update->myChatMember) {
-            $my_chat_member_updated_id = self::chatMemberUpdatedInsert($my_chat_member);
+            $repo->myChatMemberId = self::chatMemberUpdatedInsert($my_chat_member);
         } elseif ($chat_member = $update->chatMember) {
-            $chat_member_updated_id = self::chatMemberUpdatedInsert($chat_member);
+            $repo->chatMemberId = self::chatMemberUpdatedInsert($chat_member);
+        } elseif ($chat_join_request = $update->chatJoinRequest) {
+            $repo->chatJoinRequestId = self::chatJoinRequestInsert($chat_join_request);
         } else {
             return false;
         }
 
-        return self::telegramUpdateInsert(
-            $update->updateId,
-            $chat_id,
-            $message_id,
-            $edited_message_id,
-            $channel_post_id,
-            $edited_channel_post_id,
-            $inline_query_id,
-            $chosen_inline_result_id,
-            $callback_query_id,
-            $shipping_query_id,
-            $pre_checkout_query_id,
-            $poll_id,
-            $poll_answer_poll_id,
-            $my_chat_member_updated_id,
-            $chat_member_updated_id
-        );
+        return self::telegramUpdateInsert($repo);
     }
 
     /**

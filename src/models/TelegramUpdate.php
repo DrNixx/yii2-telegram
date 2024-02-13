@@ -32,6 +32,9 @@ use yii\helpers\ArrayHelper;
  * @property object|null $chatMemberId A chat member's status was updated in a chat. The bot must be an
  * administrator in the chat and must explicitly specify “chat_member” in the list of allowed_updates to receive these updates.
  *
+ * @property object|null $chatJoinRequestId A chat member's status was updated in a chat. The bot must be an
+ *  administrator in the chat and must explicitly specify “chat_member” in the list of allowed_updates to receive these updates.
+ *
  * @property-read int $id Update's unique identifier
  */
 class TelegramUpdate extends TelegramActiveRecord
@@ -53,6 +56,7 @@ class TelegramUpdate extends TelegramActiveRecord
         'pollAnswer' => 'pollAnswerId',
         'myChatMember' => 'myChatMemberId',
         'chatMember' => 'chatMemberId',
+        'chatJoinRequest' => 'chatJoinRequestId',
     ];
 
     /**

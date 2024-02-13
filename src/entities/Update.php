@@ -47,6 +47,9 @@ use onix\telegram\entities\payments\ShippingQuery;
  * The bot must be an administrator in the chat and must explicitly specify “chat_member” in the list of
  * allowed_updates to receive these updates.
  *
+ * @property-read ChatJoinRequest $chatJoinRequest Optional. A request to join the chat has been sent. The bot
+ * must have the can_invite_users administrator right in the chat to receive these updates.
+ *
  *
  */
 class Update extends Entity
@@ -71,6 +74,7 @@ class Update extends Entity
             'pollAnswer',
             'myChatMember',
             'chatMember',
+            'chatJoinRequest',
         ];
     }
     
@@ -93,6 +97,7 @@ class Update extends Entity
             'pollAnswer' => PollAnswer::class,
             'myChatMember' => ChatMemberUpdated::class,
             'chatMember' => ChatMemberUpdated::class,
+            'chatJoinRequest' => ChatJoinRequest::class,
         ];
     }
 
@@ -116,9 +121,9 @@ class Update extends Entity
     /**
      * Get update content
      *
-     * @return CallbackQuery|ChosenInlineResult|InlineQuery|Message
+     * @return CallbackQuery|Message|InlineQuery|ChosenInlineResult|null
      */
-    public function getUpdateContent()
+    public function getUpdateContent(): CallbackQuery|Message|InlineQuery|ChosenInlineResult|null
     {
         if ($update_type = $this->getUpdateType()) {
             // Instead of just getting the property as an array,

@@ -27,11 +27,13 @@ class ChatAction
      * Record Audio chat action
      */
     const RECORD_AUDIO = 'record_audio';
+    const RECORD_VOICE = 'record_voice';
 
     /**
      * Upload Audio chat action
      */
     const UPLOAD_AUDIO = 'upload_audio';
+    const UPLOAD_VOICE = 'upload_voice';
 
     /**
      * Upload Document chat action

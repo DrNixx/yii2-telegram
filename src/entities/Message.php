@@ -116,6 +116,7 @@ use onix\telegram\entities\payments\SuccessfulPayment;
  *
  * @property-read ProximityAlertTriggered $proximityAlertTriggered	Optional. Service message. A user in the chat triggered another user's proximity alert while sharing Live Location.
  *
+ * @property-read VoiceChatScheduled $voiceChatScheduled Optional. Service message: voice chat scheduled
  * @property-read VoiceChatStarted $voiceChatStarted Optional. Service message: voice chat started
  * @property-read VoiceChatEnded $voiceChatEnded Optional. Service message: voice chat ended
  * @property-read VoiceChatParticipantsInvited $voiceChatParticipantsInvited Optional. Service message: new participants invited to a voice chat

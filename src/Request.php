@@ -2,6 +2,7 @@
 namespace onix\telegram;
 
 use CURLFile;
+use onix\telegram\entities\botCommandScope\BotCommandScope;
 use onix\telegram\entities\File;
 use onix\telegram\entities\inputMedia\InputMedia;
 use onix\telegram\entities\Message;
@@ -148,6 +149,20 @@ use yii\httpclient\Client;
  * for a chat. Any previously generated link is revoked. The bot must be an administrator in the chat for this to
  * work and must have the appropriate admin rights. Returns the new invite link as String on success.
  *
+ * @method static ServerResponse createChatInviteLink(array $data) Use this method to create an additional invite
+ * link for a chat. The bot must be an administrator in the chat for this to work and must have the appropriate
+ * admin rights. The link can be revoked using the method revokeChatInviteLink. Returns the new invite
+ * link as ChatInviteLink object.
+ *
+ * @method static ServerResponse editChatInviteLink(array $data) Use this method to edit a non-primary invite link
+ * created by the bot. The bot must be an administrator in the chat for this to work and must have the appropriate
+ * admin rights. Returns the edited invite link as a ChatInviteLink object.
+ *
+ * @method static ServerResponse revokeChatInviteLink(array $data) Use this method to revoke an invite link created
+ * by the bot. If the primary link is revoked, a new link is automatically generated. The bot must be an administrator
+ * in the chat for this to work and must have the appropriate admin rights.
+ * Returns the revoked invite link as ChatInviteLink object.
+ *
  * @method ServerResponse approveChatJoinRequest(array $data) Use this method to approve a chat join request.
  * The bot must be an administrator in the chat for this to work and must have the can_invite_users
  * administrator right. Returns True on success.
@@ -218,8 +233,8 @@ use yii\httpclient\Client;
  * @method ServerResponse setMyCommands(array $data) Use this method to change the list of the bot's commands.
  * Returns True on success.
  *
- * @method ServerResponse getMyCommands() Use this method to get the current list of the bot's commands.
- * Requires no parameters. Returns Array of BotCommand on success.
+ * @method ServerResponse getMyCommands(?BotCommandScope $scope = null, ?string $language_code = null) Use this method
+ * to get the current list of the bot's commands. Returns Array of BotCommand on success.
  *
  * @method ServerResponse deleteMyCommands() Use this method to delete the list of the bot's commands for the given
  * scope and user language. After deletion, higher level commands will be shown to affected users.
@@ -387,6 +402,9 @@ class Request extends BaseObject
         'setChatAdministratorCustomTitle',
         'setChatPermissions',
         'exportChatInviteLink',
+        'createChatInviteLink',
+        'editChatInviteLink',
+        'revokeChatInviteLink',
         'approveChatJoinRequest',
         'declineChatJoinRequest',
         'setChatPhoto',
@@ -1087,6 +1105,9 @@ class Request extends BaseObject
      *
      * @param array $data
      * @return ServerResponse
+     *
+     * @deprecated
+     * @see Request::getChatMemberCount()
      */
     public function getChatMembersCount(array $data = []): ServerResponse
     {

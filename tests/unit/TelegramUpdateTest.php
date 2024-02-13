@@ -89,11 +89,23 @@ class TelegramUpdateTest extends \Codeception\Test\Unit
         verify($message->entities)->notNull();
     }
 
+    public function testHandleChannelChatCreated()
+    {
+        $update = $this->runHandler('channel_chat_created');
+        verify($update)->instanceOf(TelegramUpdate::class);
+    }
+
     public function testHandleChannelPost()
     {
         $update = $this->runHandler('channel_post');
         verify($update)->instanceOf(TelegramUpdate::class);
         verify($update->channelPostId)->isInt();
+    }
+
+    public function testHandleMessageAutoDeleteTimerChanged()
+    {
+        $update = $this->runHandler('message_auto_delete_timer_changed');
+        verify($update)->instanceOf(TelegramUpdate::class);
     }
 
     public function testHandleAudio()
@@ -162,6 +174,13 @@ class TelegramUpdateTest extends \Codeception\Test\Unit
         verify($update)->instanceOf(TelegramUpdate::class);
         $message = $this->getMessage($update);
         verify($message->newChatMembers)->notNull();
+    }
+
+    public function testHandleChatJoinRequest()
+    {
+        $update = $this->runHandler('chat_join_request');
+        verify($update)->instanceOf(TelegramUpdate::class);
+        verify($update->chatJoinRequestId)->isObject();
     }
 
     public function testHandleChosenInlineResult()

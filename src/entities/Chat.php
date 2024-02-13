@@ -18,6 +18,7 @@ namespace onix\telegram\entities;
  * @property-read ChatPhoto $photo Optional. Chat photo. Returned only in getChat.
  * @property-read bool $hasPrivateForwards Optional. True, if privacy settings of the other party in the private
  * chat allows to use tg://user?id=<user_id> links only in chats with the user. Returned only in getChat.
+ *
  * @property-read string $description Optional. Description, for groups, supergroups and channel chats.
  * Returned only in getChat.
  *
