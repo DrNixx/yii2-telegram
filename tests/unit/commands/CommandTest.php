@@ -1,4 +1,5 @@
-<?php
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
+
 namespace onix\telegram\tests\unit\commands;
 
 use Codeception\Test\Unit;

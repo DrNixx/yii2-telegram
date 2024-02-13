@@ -1,9 +1,11 @@
-<?php
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
+
 namespace onix\telegram\tests\unit\entities;
 
+use Codeception\Test\Unit;
 use onix\telegram\entities\File;
 
-class FileTest extends \Codeception\Test\Unit
+class FileTest extends Unit
 {
     /**
      * @var array

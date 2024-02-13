@@ -1,11 +1,13 @@
-<?php
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
+
 namespace onix\telegram\tests\unit\entities;
 
+use Codeception\Test\Unit;
 use onix\telegram\entities\games\CallbackGame;
 use onix\telegram\entities\InlineKeyboardButton;
 use onix\telegram\exceptions\TelegramException;
 
-class InlineKeyboardButtonTest extends \Codeception\Test\Unit
+class InlineKeyboardButtonTest extends Unit
 {
     private static $errText = 'You must use only one of these fields: url, login_url, callback_data, switch_inline_query,' .
                 ' switch_inline_query_current_chat, callback_game, pay';

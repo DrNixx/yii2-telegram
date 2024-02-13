@@ -1,10 +1,12 @@
-<?php
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
+
 namespace onix\telegram\tests\unit\entities;
 
+use Codeception\Test\Unit;
 use onix\telegram\entities\Update;
 use yii\helpers\Json;
 
-class UpdateTest extends \Codeception\Test\Unit
+class UpdateTest extends Unit
 {
     public function testUpdateCast()
     {

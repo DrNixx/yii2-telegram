@@ -1,11 +1,13 @@
-<?php
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
+
 namespace onix\telegram\tests\unit\entities;
 
+use Codeception\Test\Unit;
 use onix\telegram\entities\InlineKeyboard;
 use onix\telegram\entities\InlineKeyboardButton;
 use onix\telegram\exceptions\TelegramException;
 
-class InlineKeyboardTest extends \Codeception\Test\Unit
+class InlineKeyboardTest extends Unit
 {
     private function getRandomButton($text)
     {

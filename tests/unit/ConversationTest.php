@@ -1,13 +1,15 @@
-<?php
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
+
 namespace onix\telegram\tests\unit;
 
+use Codeception\Test\Unit;
 use onix\telegram\Conversation;
 use onix\telegram\exceptions\TelegramException;
 use onix\telegram\models\Conversation as ConversationRepo;
 use onix\telegram\tests\fixtures\ConversationFixture;
 use onix\telegram\tests\UnitTester;
 
-class ConversationTest extends \Codeception\Test\Unit
+class ConversationTest extends Unit
 {
     public function _fixtures()
     {

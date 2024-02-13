@@ -1,9 +1,11 @@
-<?php
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
+
 namespace onix\telegram\tests\unit\entities;
 
+use Codeception\Test\Unit;
 use onix\telegram\entities\Audio;
 
-class AudioTest extends \Codeception\Test\Unit
+class AudioTest extends Unit
 {
     public static function getFakeRecordedAudio()
     {

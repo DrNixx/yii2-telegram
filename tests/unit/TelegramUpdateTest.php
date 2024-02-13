@@ -1,7 +1,8 @@
-<?php
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
 
 namespace onix\telegram\tests\unit;
 
+use Codeception\Test\Unit;
 use onix\telegram\models\Message;
 use onix\telegram\models\MessageReactionUpdated;
 use onix\telegram\models\TelegramUpdate;
@@ -9,7 +10,7 @@ use onix\telegram\Telegram;
 use onix\telegram\tests\fixtures\UpdatesFixture;
 use onix\telegram\tests\UnitTester;
 
-class TelegramUpdateTest extends \Codeception\Test\Unit
+class TelegramUpdateTest extends Unit
 {
     /**
      * @var UnitTester

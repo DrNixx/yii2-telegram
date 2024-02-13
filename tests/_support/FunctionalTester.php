@@ -1,5 +1,8 @@
-<?php
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
+
 namespace onix\telegram\tests;
+
+use Codeception\Actor;
 
 /**
  * Inherited Methods
@@ -16,7 +19,7 @@ namespace onix\telegram\tests;
  *
  * @SuppressWarnings(PHPMD)
 */
-class FunctionalTester extends \Codeception\Actor
+class FunctionalTester extends Actor
 {
     use _generated\FunctionalTesterActions;
 

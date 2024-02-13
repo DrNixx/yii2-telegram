@@ -1,10 +1,12 @@
-<?php
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
+
 namespace onix\telegram\tests\unit\entities;
 
+use Codeception\Test\Unit;
 use onix\telegram\entities\Keyboard;
 use onix\telegram\entities\KeyboardButton;
 
-class KeyboardTest extends \Codeception\Test\Unit
+class KeyboardTest extends Unit
 {
     public function testKeyboardDataMalformedField()
     {

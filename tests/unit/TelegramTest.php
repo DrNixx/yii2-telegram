@@ -1,11 +1,13 @@
-<?php
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
+
 namespace onix\telegram\tests\unit;
 
+use Codeception\Test\Unit;
 use onix\telegram\Telegram;
 use onix\telegram\tests\fixtures\UpdatesFixture;
 use yii\base\InvalidConfigException;
 
-class TelegramTest extends \Codeception\Test\Unit
+class TelegramTest extends Unit
 {
     public function _fixtures()
     {

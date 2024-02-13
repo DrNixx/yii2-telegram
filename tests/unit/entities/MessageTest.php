@@ -1,9 +1,11 @@
-<?php
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
+
 namespace onix\telegram\tests\unit\entities;
 
+use Codeception\Test\Unit;
 use onix\telegram\entities\Message;
 
-class MessageTest extends \Codeception\Test\Unit
+class MessageTest extends Unit
 {
     /**
      * Data template of a user.
