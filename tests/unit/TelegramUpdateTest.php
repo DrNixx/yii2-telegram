@@ -3,6 +3,7 @@
 namespace onix\telegram\tests\unit;
 
 use onix\telegram\models\Message;
+use onix\telegram\models\MessageReactionUpdated;
 use onix\telegram\models\TelegramUpdate;
 use onix\telegram\Telegram;
 use onix\telegram\tests\fixtures\UpdatesFixture;
@@ -106,6 +107,14 @@ class TelegramUpdateTest extends \Codeception\Test\Unit
     {
         $update = $this->runHandler('message_auto_delete_timer_changed');
         verify($update)->instanceOf(TelegramUpdate::class);
+    }
+
+    public function testHandleMessageReaction()
+    {
+        $update = $this->runHandler('message_reaction');
+        verify($update)->instanceOf(TelegramUpdate::class);
+        $reaction = $this->tester->grabRecord(MessageReactionUpdated::class, ['_id' => $update->messageReactionId]);
+        verify($reaction)->notNull();
     }
 
     public function testHandleAudio()
@@ -237,5 +246,31 @@ class TelegramUpdateTest extends \Codeception\Test\Unit
         $update = $this->runHandler('shipping_query');
         verify($update)->instanceOf(TelegramUpdate::class);
         verify($update->shippingQueryId)->isString();
+    }
+
+    public function testHandleSticker()
+    {
+        $update = $this->runHandler('sticker');
+        verify($update)->instanceOf(TelegramUpdate::class);
+    }
+
+    private function runAll()
+    {
+        $folder = codecept_data_dir() . '/updates';
+        $files = scandir($folder);
+        $files = array_diff($files, ['.', '..']);
+
+        foreach ($files as $file) {
+            $name = basename($file, '.json');
+            $this->tester->comment("Test \"{$name}\"");
+            $update = $this->runHandler($name);
+            verify($update)->instanceOf(TelegramUpdate::class);
+            echo $file . "<br>";
+        }
+    }
+
+    public function testHaldleAll()
+    {
+        $this->runAll();
     }
 }

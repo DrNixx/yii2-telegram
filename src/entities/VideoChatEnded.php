@@ -10,7 +10,7 @@ namespace onix\telegram\entities;
  *
  * @property-read int $duration Voice chat duration; in seconds
  */
-class VoiceChatEnded extends Entity
+class VideoChatEnded extends Entity
 {
     /**
      * @inheritDoc

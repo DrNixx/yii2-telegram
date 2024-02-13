@@ -10,7 +10,7 @@ namespace onix\telegram\entities;
  *
  * @property-read User[] $users Optional. New members that were invited to the voice chat
  */
-class VoiceChatParticipantsInvited extends Entity
+class VideoChatParticipantsInvited extends Entity
 {
     /**
      * @inheritDoc

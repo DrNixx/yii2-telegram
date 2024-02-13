@@ -4,6 +4,8 @@ namespace onix\telegram;
 use MongoDB\BSON\UTCDateTime;
 use onix\telegram\entities\CallbackQuery;
 use onix\telegram\entities\Chat;
+use onix\telegram\entities\chatBoost\ChatBoostRemoved;
+use onix\telegram\entities\chatBoost\ChatBoostUpdated as ChatBoostUpdated;
 use onix\telegram\entities\ChatJoinRequest;
 use onix\telegram\entities\ChatMemberUpdated;
 use onix\telegram\entities\ChosenInlineResult;
@@ -16,11 +18,15 @@ use onix\telegram\entities\payments\PreCheckoutQuery;
 use onix\telegram\entities\payments\ShippingQuery;
 use onix\telegram\entities\Poll;
 use onix\telegram\entities\PollAnswer;
+use onix\telegram\entities\reaction\MessageReactionCountUpdated;
+use onix\telegram\entities\reaction\MessageReactionUpdated;
 use onix\telegram\entities\Update;
 use onix\telegram\entities\User;
 use onix\telegram\exceptions\TelegramException;
 use onix\telegram\models\CallbackQuery as CallbackQueryRepo;
 use onix\telegram\models\Chat as ChatRepo;
+use onix\telegram\models\ChatBoostRemoved as ChatBoostRemovedRepo;
+use onix\telegram\models\ChatBoostUpdated as ChatBoostUpdatedRepo;
 use onix\telegram\models\ChatJoinRequest as ChatJoinRequestRepo;
 use onix\telegram\models\ChatMemberUpdated as ChatMemberUpdatedRepo;
 use onix\telegram\models\ChosenInlineResult as ChosenInlineResultRepo;
@@ -28,6 +34,8 @@ use onix\telegram\models\Conversation as ConversationRepo;
 use onix\telegram\models\EditedMessage as EditedMessageRepo;
 use onix\telegram\models\InlineQuery as InlineQueryRepo;
 use onix\telegram\models\Message as MessageRepo;
+use onix\telegram\models\MessageReactionCountUpdated as MessageReactionCountUpdatedRepo;
+use onix\telegram\models\MessageReactionUpdated as MessageReactionUpdatedRepo;
 use onix\telegram\models\Poll as PollRepo;
 use onix\telegram\models\PollAnswer as PollAnswerRepo;
 use onix\telegram\models\PreCheckoutQuery as PreCheckoutQueryRepo;
@@ -260,7 +268,110 @@ class Storage
     }
 
     /**
-     * @param ChatMemberUpdated $entity
+     * @param ChatBoostUpdated $entity
+     * @return object|null
+     * @throws TelegramException
+     */
+    private static function chatBoostUpdatedRequestInsert(ChatBoostUpdated $entity): ?object
+    {
+        $chat = $entity->chat;
+        self::chatInsert($chat);
+
+        $repo = new ChatBoostUpdatedRepo();
+        $repo->assign($entity);
+        $repo->chatId = $entity->chat->id;
+
+        $result = $repo->save();
+        if (!$result) {
+            \Yii::warning(['Insert updates error', $repo], 'telegram');
+            return null;
+        }
+
+        return $repo->_id;
+    }
+
+    /**
+     * @param ChatBoostUpdated $entity
+     * @return object|null
+     * @throws TelegramException
+     */
+    private static function chatBoostRemovedRequestInsert(ChatBoostRemoved $entity): ?object
+    {
+        $chat = $entity->chat;
+        self::chatInsert($chat);
+
+        $repo = new ChatBoostRemovedRepo();
+        $repo->assign($entity);
+        $repo->chatId = $entity->chat->id;
+        $repo->removeDate = self::getTimestamp($entity->removeDate);
+
+        $result = $repo->save();
+        if (!$result) {
+            \Yii::warning(['Insert updates error', $repo], 'telegram');
+            return null;
+        }
+
+        return $repo->_id;
+    }
+
+    /**
+     * @param MessageReactionUpdated $entity
+     * @return object|null
+     * @throws TelegramException
+     */
+    private static function messageReactionUpdatedRequestInsert(MessageReactionUpdated $entity): ?object
+    {
+        $chat = $entity->chat;
+        self::chatInsert($chat);
+
+        $user = $entity->user;
+        if ($user) {
+            self::userUpsert($user);
+        }
+
+        $actorChat = $entity->actorChat;
+        if ($actorChat) {
+            self::chatInsert($actorChat);
+        }
+
+
+        $repo = new MessageReactionUpdatedRepo();
+        $repo->assign($entity);
+        $repo->chatId = $chat->id;
+        $repo->userId = $user?->id;
+        $repo->actorChatId = $actorChat?->id;
+        $repo->date = self::getTimestamp($entity->date);
+
+        $result = $repo->save();
+        if (!$result) {
+            \Yii::warning(['Insert updates error', $repo], 'telegram');
+            return null;
+        }
+
+        return $repo->_id;
+    }
+
+    private static function messageReactionCountUpdatedRequestInsert(MessageReactionCountUpdated $entity)
+    {
+        $chat = $entity->chat;
+        self::chatInsert($chat);
+
+        $repo = new MessageReactionCountUpdatedRepo();
+        $repo->assign($entity);
+        $repo->chatId = $chat->id;
+        $repo->date = self::getTimestamp($entity->date);
+
+        $result = $repo->save();
+        if (!$result) {
+            \Yii::warning(['Insert updates error', $repo], 'telegram');
+            return null;
+        }
+
+        return $repo->_id;
+    }
+
+    /**
+     * @param ChatJoinRequest $entity
      *
      * @return object|null
      *
@@ -515,6 +626,14 @@ class Storage
             $repo->chatMemberId = self::chatMemberUpdatedInsert($chat_member);
         } elseif ($chat_join_request = $update->chatJoinRequest) {
             $repo->chatJoinRequestId = self::chatJoinRequestInsert($chat_join_request);
+        } elseif ($chat_boost_updated = $update->chatBoost) {
+            $repo->chatBoostId = self::chatBoostUpdatedRequestInsert($chat_boost_updated);
+        } elseif ($chat_boost_removed = $update->removedChatBoost) {
+            $repo->removedChatBoostId = self::chatBoostRemovedRequestInsert($chat_boost_removed);
+        } elseif ($data = $update->messageReaction) {
+            $repo->messageReactionId = self::messageReactionUpdatedRequestInsert($data);
+        } elseif ($data = $update->messageReactionCount) {
+            $repo->messageReactionCountId = self::messageReactionCountUpdatedRequestInsert($data);
         } else {
             return false;
         }

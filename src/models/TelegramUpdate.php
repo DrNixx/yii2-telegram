@@ -1,6 +1,8 @@
 <?php
 namespace onix\telegram\models;
 
+use onix\telegram\entities\chatBoost\ChatBoostRemoved;
+use onix\telegram\entities\chatBoost\ChatBoostUpdated;
 use onix\telegram\entities\Update;
 use yii\helpers\ArrayHelper;
 
@@ -13,6 +15,15 @@ use yii\helpers\ArrayHelper;
  * @property object|null $editedMessageId New version of a message that is known to the bot and was edited
  * @property int|null $channelPostId New incoming channel post of any kind - text, photo, sticker, etc.
  * @property int|null $editedChannelPostId New version of a channel post that is known to the bot and was edited
+ * @property object|null $messageReactionId A reaction to a message was changed by a user.
+ * The bot must be an administrator in the chat and must explicitly specify "message_reaction" in the list
+ * of allowed_updates to receive these updates. The update isn't received for reactions set by bots.
+ *
+ * @property object|null $messageReactionCountId Reactions to a message with anonymous
+ * reactions were changed. The bot must be an administrator in the chat and must explicitly specify
+ * "message_reaction_count" in the list of allowed_updates to receive these updates. The updates are grouped
+ * and can be sent with delay up to a few minutes.
+ *
  * @property int|null $inlineQueryId New incoming inline query
  * @property string|null $chosenInlineResultId The result of an inline query that was chosen by a user and sent
  * to their chat partner
@@ -33,7 +44,13 @@ use yii\helpers\ArrayHelper;
  * administrator in the chat and must explicitly specify “chat_member” in the list of allowed_updates to receive these updates.
  *
  * @property object|null $chatJoinRequestId A chat member's status was updated in a chat. The bot must be an
- *  administrator in the chat and must explicitly specify “chat_member” in the list of allowed_updates to receive these updates.
+ * administrator in the chat and must explicitly specify “chat_member” in the list of allowed_updates to receive these updates.
+ *
+ * @property object|null $chatBoostId Optional. A chat boost was added or changed. The bot must be
+ * an administrator in the chat to receive these updates.
+ *
+ * @property object|null $removedChatBoostId Optional. A boost was removed from a chat. The bot must be
+ * an administrator in the chat to receive these updates.
  *
  * @property-read int $id Update's unique identifier
  */
@@ -47,6 +64,8 @@ class TelegramUpdate extends TelegramActiveRecord
         'editedMessage' => 'editedMessageId',
         'channelPost' => 'channelPostId',
         'editedChannelPost' => 'editedChannelPostId',
+        'messageReaction' => 'messageReactionId',
+        'messageReactionCount' => 'messageReactionCountId',
         'inlineQuery' => 'inlineQueryId',
         'chosenInlineResult' => 'chosenInlineResultId',
         'callbackQuery' => 'callbackQueryId',
@@ -57,6 +76,8 @@ class TelegramUpdate extends TelegramActiveRecord
         'myChatMember' => 'myChatMemberId',
         'chatMember' => 'chatMemberId',
         'chatJoinRequest' => 'chatJoinRequestId',
+        'chatBoost' => 'chatBoostId',
+        'removedChatBoost' => 'removedChatBoostId',
     ];
 
     /**
@@ -96,7 +117,8 @@ class TelegramUpdate extends TelegramActiveRecord
                     'editedChannelPostId',
                     'pollAnswerId',
                     'myChatMemberId',
-                    'chatMemberId'
+                    'chatMemberId',
+                    'chatBoostId'
                 ], 'safe'
             ],
         ]);

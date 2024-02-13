@@ -1,6 +1,7 @@
 <?php
 namespace onix\telegram\models;
 
+use MongoDB\BSON\UTCDateTime;
 use onix\telegram\entities\ChatMemberUpdated as ChatMemberUpdatedEntity;
 
 /**
@@ -9,7 +10,7 @@ use onix\telegram\entities\ChatMemberUpdated as ChatMemberUpdatedEntity;
  * @property object $_id Unique identifier
  * @property int $chatId Chat the user belongs to
  * @property int $userId Performer of the action, which resulted in the change
- * @property string $date Date the change was done in Unix time
+ * @property UTCDateTime $date Date the change was done in Unix time
  * @property string $oldChatMember Previous information about the chat member
  * @property string $newChatMember New information about the chat member
  * @property string $inviteLink Optional. Chat invite link, which was used by the user to join the chat; for joining by invite link events only.

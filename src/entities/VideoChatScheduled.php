@@ -8,6 +8,6 @@ namespace onix\telegram\entities;
  *
  * @link https://core.telegram.org/bots/api#voicechatstarted
  */
-class VoiceChatScheduled extends Entity
+class VideoChatScheduled extends Entity
 {
 }

@@ -15,6 +15,7 @@ namespace onix\telegram\entities;
  * @property-read string $username Optional. Username, for private chats, supergroups and channels if available
  * @property-read string $firstName Optional. First name of the other party in a private chat
  * @property-read string $lastName Optional. Last name of the other party in a private chat
+ * @property-read bool $isForum Optional. True, if the supergroup chat is a forum (has topics enabled)
  * @property-read ChatPhoto $photo Optional. Chat photo. Returned only in getChat.
  * @property-read bool $hasPrivateForwards Optional. True, if privacy settings of the other party in the private
  * chat allows to use tg://user?id=<user_id> links only in chats with the user. Returned only in getChat.
@@ -58,6 +59,7 @@ class Chat extends Entity
             'username',
             'firstName',
             'lastName',
+            'isForum',
             'photo',
             'hasPrivateForwards',
             'description',

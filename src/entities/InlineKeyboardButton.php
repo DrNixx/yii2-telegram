@@ -18,6 +18,9 @@ use Yii;
  * @property string $callbackData Optional. Data to be sent in a callback query to the bot
  * when button is pressed, 1-64 bytes
  *
+ * @property WebAppInfo $webApp Optional. If specified, the described Web App will be launched when the
+ * button is pressed. The Web App will be able to send a “web_app_data” service message. Available in private chats only.
+ *
  * @property string $switchInlineQuery Optional. If set, pressing the button will prompt the user to select
  * one of their chats, open that chat and insert the bot's username and the specified inline query in the input field.
  * Can be empty, in which case just the bot’s username will be inserted.
@@ -43,10 +46,18 @@ class InlineKeyboardButton extends KeyboardButton
             'url',
             'loginUrl',
             'callbackData',
+            'webApp',
             'switchInlineQuery',
             'switchInlineQueryCurrentChat',
             'callbackGame',
             'pay'
+        ];
+    }
+
+    public function subEntities(): array
+    {
+        return [
+            'webApp' => WebAppInfo::class,
         ];
     }
 
@@ -55,7 +66,7 @@ class InlineKeyboardButton extends KeyboardButton
      *
      * @throws TelegramException
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

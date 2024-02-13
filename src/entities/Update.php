@@ -1,8 +1,12 @@
 <?php
 namespace onix\telegram\entities;
 
+use onix\telegram\entities\chatBoost\ChatBoostRemoved;
+use onix\telegram\entities\chatBoost\ChatBoostUpdated;
 use onix\telegram\entities\payments\PreCheckoutQuery;
 use onix\telegram\entities\payments\ShippingQuery;
+use onix\telegram\entities\reaction\MessageReactionCountUpdated;
+use onix\telegram\entities\reaction\MessageReactionUpdated;
 
 /**
  * Class Update
@@ -22,6 +26,15 @@ use onix\telegram\entities\payments\ShippingQuery;
  *
  * @property-read EditedChannelPost $editedChannelPost Optional. New version of a post in the channel that is known to
  * the bot and was edited
+ *
+ * @property-read MessageReactionUpdated $messageReaction Optional. A reaction to a message was changed by a user.
+ * The bot must be an administrator in the chat and must explicitly specify "message_reaction" in the list
+ * of allowed_updates to receive these updates. The update isn't received for reactions set by bots.
+ *
+ * @property-read MessageReactionCountUpdated $messageReactionCount Optional. Reactions to a message with anonymous
+ * reactions were changed. The bot must be an administrator in the chat and must explicitly specify
+ * "message_reaction_count" in the list of allowed_updates to receive these updates. The updates are grouped
+ * and can be sent with delay up to a few minutes.
  *
  * @property-read InlineQuery $inlineQuery Optional. New incoming inline query
  * @property-read ChosenInlineResult $chosenInlineResult Optional. The result of an inline query that was chosen
@@ -50,7 +63,11 @@ use onix\telegram\entities\payments\ShippingQuery;
  * @property-read ChatJoinRequest $chatJoinRequest Optional. A request to join the chat has been sent. The bot
  * must have the can_invite_users administrator right in the chat to receive these updates.
  *
+ * @property-read ChatBoostUpdated $chatBoost Optional. A chat boost was added or changed. The bot must be
+ * an administrator in the chat to receive these updates.
  *
+ * @property-read ChatBoostRemoved $removedChatBoost Optional. A boost was removed from a chat. The bot must be
+ * an administrator in the chat to receive these updates.
  */
 class Update extends Entity
 {
@@ -65,6 +82,8 @@ class Update extends Entity
             'editedMessage',
             'channelPost',
             'editedChannelPost',
+            'messageReaction',
+            'messageReactionCount',
             'inlineQuery',
             'chosenInlineResult',
             'callbackQuery',
@@ -75,6 +94,8 @@ class Update extends Entity
             'myChatMember',
             'chatMember',
             'chatJoinRequest',
+            'chatBoost',
+            'removedChatBoost',
         ];
     }
     
@@ -88,6 +109,8 @@ class Update extends Entity
             'editedMessage' => EditedMessage::class,
             'channelPost' => ChannelPost::class,
             'editedChannelPost' => EditedChannelPost::class,
+            'messageReaction' => MessageReactionUpdated::class,
+            'messageReactionCount' => MessageReactionCountUpdated::class,
             'inlineQuery' => InlineQuery::class,
             'chosenInlineResult' => ChosenInlineResult::class,
             'callbackQuery' => CallbackQuery::class,
@@ -98,6 +121,8 @@ class Update extends Entity
             'myChatMember' => ChatMemberUpdated::class,
             'chatMember' => ChatMemberUpdated::class,
             'chatJoinRequest' => ChatJoinRequest::class,
+            'chatBoost' => ChatBoostUpdated::class,
+            'removedChatBoost' => ChatBoostRemoved::class,
         ];
     }
 
