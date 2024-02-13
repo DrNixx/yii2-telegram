@@ -945,7 +945,6 @@ class Request extends BaseObject
      * @return array
      *
      * @throws TelegramException
-     * @throws BaseException
      */
     public function sendToActiveChats(
         string $callback_function,

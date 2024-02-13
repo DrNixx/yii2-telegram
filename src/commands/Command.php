@@ -460,9 +460,8 @@ abstract class Command extends BaseObject
      * @return ServerResponse
      *
      * @throws TelegramException
-     * @throws BaseException
      */
-    public function replyToChat(string $text, array $data = [])
+    public function replyToChat(string $text, array $data = []): ServerResponse
     {
         if ($message = $this->message ?:
             $this->editedMessage ?:
