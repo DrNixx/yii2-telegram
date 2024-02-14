@@ -1,25 +1,20 @@
 <?php
 namespace onix\telegram\models;
 
-use onix\data\ActiveQueryEx;
+use yii\mongodb\ActiveQuery;
 
 /**
  * This is the ActiveQuery class for [[RequestLimiter]].
  *
  * @see RequestLimiter
  */
-class RequestLimiterQuery extends ActiveQueryEx
+class RequestLimiterQuery extends ActiveQuery
 {
-    /*public function active()
-    {
-        return $this->andWhere('[[status]]=1');
-    }*/
-
     /**
      * {@inheritdoc}
      * @return RequestLimiter[]|array
      */
-    public function all($db = null)
+    public function all($db = null): array
     {
         return parent::all($db);
     }
@@ -28,7 +23,7 @@ class RequestLimiterQuery extends ActiveQueryEx
      * {@inheritdoc}
      * @return RequestLimiter|array|null
      */
-    public function one($db = null)
+    public function one($db = null): ?RequestLimiter
     {
         return parent::one($db);
     }

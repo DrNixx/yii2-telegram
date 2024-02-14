@@ -47,6 +47,7 @@ use onix\telegram\models\UserChat as UserChatRepo;
 use yii\db\BaseActiveRecord;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
+use yii\mongodb\Exception as MongoDbException;
 
 class Storage
 {
@@ -1066,10 +1067,11 @@ class Storage
     /**
      * Get Telegram API request count for current chat / message
      *
-     * @param integer|null $chat_id
+     * @param int|null $chat_id
      * @param string|null $inline_message_id
      *
      * @return array Array containing TOTAL and CURRENT fields or false on invalid arguments
+     * @throws MongoDbException
      */
     public static function getTelegramRequestCount(int $chat_id = null, string $inline_message_id = null): array
     {
@@ -1077,11 +1079,10 @@ class Storage
         $date_minute = new UTCDateTime($date->toDateTime()->modify('-1 minute'));
 
         return [
-            'LIMIT_PER_SEC_ALL' => RequestLimiter::find()
+            'LIMIT_PER_SEC_ALL' => count(RequestLimiter::find()
                 ->where(['>=', 'date', $date])
-                ->select('chatId')
-                ->distinct()
-                ->count(),
+                ->select(['chatId'])
+                ->distinct('chatId')),
             'LIMIT_PER_SEC' => RequestLimiter::find()
                 ->where(['>=', 'date', $date_minute])
                 ->andWhere([
