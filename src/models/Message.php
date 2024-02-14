@@ -282,4 +282,22 @@ class Message extends TelegramActiveRecord
     {
         return new MessageQuery(get_called_class());
     }
+
+    /**
+     * @throws \Exception
+     */
+    public static function checkIndices(): void
+    {
+        $coll = self::getCollection();
+        $idxs = $coll->listIndexes();
+
+        $inames = [];
+        foreach ($idxs as $idx) {
+            $inames[$idx['name']] = 1;
+        }
+
+        if (empty($inames['_chatId_id'])) {
+            $coll->createIndex(['chatId', 'id'], ['unique' => false, 'name' => '_chatId_id']);
+        }
+    }
 }

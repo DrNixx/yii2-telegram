@@ -95,4 +95,30 @@ class Conversation extends ActiveRecord
     {
         return new ConversationQuery(get_called_class());
     }
+
+    /**
+     * @throws \Exception
+     */
+    public static function checkIndices(): void
+    {
+        $coll = self::getCollection();
+        $idxs = $coll->listIndexes();
+
+        $inames = [];
+        foreach ($idxs as $idx) {
+            $inames[$idx['name']] = 1;
+        }
+
+        if (empty($inames['_status_userId_chatId'])) {
+            $coll->createIndex(['status', 'userId', 'chatId'], ['unique' => true, 'name' => '_status_userId_chatId']);
+        }
+
+        if (empty($inames['_userId'])) {
+            $coll->createIndex(['userId'], ['unique' => false, 'name' => '_userId']);
+        }
+
+        if (empty($inames['_chatId'])) {
+            $coll->createIndex(['chatId'], ['unique' => false, 'name' => '_chatId']);
+        }
+    }
 }

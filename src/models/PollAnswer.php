@@ -63,4 +63,22 @@ class PollAnswer extends TelegramActiveRecord
     {
         return new PollAnswerQuery(get_called_class());
     }
+
+    /**
+     * @throws \Exception
+     */
+    public static function checkIndices(): void
+    {
+        $coll = self::getCollection();
+        $idxs = $coll->listIndexes();
+
+        $inames = [];
+        foreach ($idxs as $idx) {
+            $inames[$idx['name']] = 1;
+        }
+
+        if (empty($inames['_pollId_userId'])) {
+            $coll->createIndex(['pollId', 'userId'], ['unique' => false, 'name' => '_pollId_userId']);
+        }
+    }
 }

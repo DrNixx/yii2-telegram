@@ -7,6 +7,9 @@ use onix\telegram\migrations\models_v1\Chat as ChatOld;
 use onix\telegram\migrations\models_v1\User as UserOld;
 use onix\telegram\migrations\models_v1\UserChat as UserChatOld;
 use onix\telegram\models\Chat;
+use onix\telegram\models\Conversation;
+use onix\telegram\models\Message;
+use onix\telegram\models\PollAnswer;
 use onix\telegram\models\User;
 use onix\telegram\models\UserChat;
 use yii\db\Migration;
@@ -21,6 +24,15 @@ class MongoMigrate extends Migration
      */
     public function safeUp()
     {
+        Conversation::checkIndices();
+        UserChat::checkIndices();
+        Message::checkIndices();
+        PollAnswer::checkIndices();
+
+        UserChat::deleteAll();
+        Chat::deleteAll();
+        User::deleteAll();
+
         $users = UserOld::find()->all();
         foreach ($users as $oldUser) {
             $user = new User();

@@ -59,4 +59,22 @@ class UserChat extends ActiveRecord
     {
         return new UserChatQuery(get_called_class());
     }
+
+    /**
+     * @throws \Exception
+     */
+    public static function checkIndices(): void
+    {
+        $coll = self::getCollection();
+        $idxs = $coll->listIndexes();
+
+        $inames = [];
+        foreach ($idxs as $idx) {
+            $inames[$idx['name']] = 1;
+        }
+
+        if (empty($inames['_userId_chatId'])) {
+            $coll->createIndex(['userId', 'chatId'], ['unique' => true, 'name' => '_userId_chatId']);
+        }
+    }
 }
