@@ -57,7 +57,7 @@ class RequestLimiter extends ActiveRecord
         return [
             [['chatId'], 'number'],
             [['date'], 'safe'],
-            [['inlineMessage_id', 'method'], 'string', 'max' => 255],
+            [['inlineMessageId', 'method'], 'string', 'max' => 255],
         ];
     }
 
