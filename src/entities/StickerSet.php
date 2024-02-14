@@ -19,7 +19,7 @@ class StickerSet extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['name', 'title', 'isAnimated', 'isVideo', 'containsMasks', 'stickers', 'thumb'];
     }
@@ -27,7 +27,7 @@ class StickerSet extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'stickers' => [Sticker::class],

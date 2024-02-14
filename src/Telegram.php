@@ -1,21 +1,12 @@
 <?php
 namespace onix\telegram;
 
-use CURLFile;
 use onix\telegram\commands\CallbackQueryHandler;
 use onix\telegram\commands\Command;
 use onix\telegram\commands\system\CallbackqueryCommand;
 use onix\telegram\entities\ServerResponse;
 use onix\telegram\entities\Update;
 use onix\telegram\exceptions\TelegramException;
-use Exception;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use RecursiveRegexIterator;
-use ReflectionClass;
-use ReflectionException;
-use RegexIterator;
-use Yii;
 use yii\base\Component;
 use yii\base\Exception as BaseException;
 use yii\base\InvalidConfigException;
@@ -35,92 +26,92 @@ class Telegram extends Component
      *
      * @var string
      */
-    public $api_key = '';
+    public string $api_key = '';
 
     /**
      * Telegram Bot username
      *
      * @var string
      */
-    public $bot_username = '';
+    public string $bot_username = '';
 
     /**
      * Custom commands namespaces
      *
      * @var array
      */
-    public $commandsNamespaces = [];
+    public array $commandsNamespaces = [];
 
     /**
      * Telegram Bot id
      *
      * @var string
      */
-    protected $bot_id = '';
+    protected string $bot_id = '';
 
     /**
      * Custom commands objects
      *
      * @var Command[]
      */
-    protected $commands_objects = [];
+    protected array $commands_objects = [];
 
     /**
      * Current Update object
      *
-     * @var Update
+     * @var Update|null
      */
-    protected $update;
+    protected ?Update $update = null;
 
     /**
      * Upload path
      *
      * @var string
      */
-    public $uploadPath = '@app/runtime/telegram/upload';
+    public string $uploadPath = '@app/runtime/telegram/upload';
 
     /**
      * Download path
      *
      * @var string
      */
-    public $downloadPath = '@app/runtime/telegram/download';
+    public string $downloadPath = '@app/runtime/telegram/download';
 
     /**
      * Commands config
      *
      * @var array
      */
-    protected $commands_config = [];
+    protected array $commands_config = [];
 
     /**
      * Admins list
      *
      * @var array
      */
-    public $admins = [];
+    public array $admins = [];
 
     /**
      * ServerResponse of the last Command execution
      *
-     * @var ServerResponse
+     * @var ServerResponse|null
      */
-    protected $last_command_response;
+    protected ?ServerResponse $last_command_response = null;
 
     /**
      * Check if runCommands() is running in this session
      *
      * @var bool
      */
-    protected $run_commands = false;
+    protected bool $run_commands = false;
 
     /**
      * Last update ID
      * Only used when running getUpdates without a database
      *
-     * @var integer
+     * @var integer|null
      */
-    protected $last_update_id = null;
+    protected ?int $last_update_id = null;
 
     /**
      * The command to be executed when there's a new message update and nothing more suitable is found
@@ -143,9 +134,9 @@ class Telegram extends Component
     /**
      * @var Request
      */
-    private $requestInstance;
+    private Request $requestInstance;
 
-    private $version = '1.0.0';
+    private string $version = '1.0.0';
 
     /**
      * Telegram constructor
@@ -174,45 +165,45 @@ class Telegram extends Component
      *
      * @throws InvalidConfigException
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
         //Add default commands path
         $class = get_class($this);
         if (($pos = strrpos($class, '\\')) !== false) {
-            $this->addCommandsNamespace(substr($class, 0, $pos) . '\\commands', true);
+            $this->addCommandsNamespace(substr($class, 0, $pos) . '\\commands');
         }
 
-        if (!Yii::$app->has('tgRequest')) {
-            Yii::$app->set('tgRequest', [
+        if (!\Yii::$app->has('tgRequest')) {
+            \Yii::$app->set('tgRequest', [
                 'class' => Request::class,
                 'telegram' => $this,
             ]);
         }
 
-        $this->requestInstance = Yii::$app->get('tgRequest');
+        $this->requestInstance = \Yii::$app->get('tgRequest');
     }
 
     /**
      * @return Request
      */
-    public function getRequest()
+    public function getRequest(): Request
     {
         return $this->requestInstance;
     }
 
-    private function getCommandPath($namespace)
+    private function getCommandPath($namespace): string
     {
-        return Yii::getAlias('@' . str_replace('\\', '/', $namespace));
+        return \Yii::getAlias('@' . str_replace('\\', '/', $namespace));
     }
 
-    private function validateCommandClass($commandClass)
+    private function validateCommandClass($commandClass): bool
     {
         if (class_exists($commandClass)) {
             try {
-                $class = new ReflectionClass($commandClass);
-            } catch (ReflectionException $e) {
+                $class = new \ReflectionClass($commandClass);
+            } catch (\Exception) {
                 return false;
             }
 
@@ -233,15 +224,15 @@ class Telegram extends Component
      *
      * @return array $commands
      */
-    public function getCommandsList()
+    public function getCommandsList(): array
     {
         $commands = [];
 
         foreach ($this->commandsNamespaces as $ns) {
             $commandPath = $this->getCommandPath($ns);
             if (is_dir($commandPath)) {
-                $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($commandPath, RecursiveDirectoryIterator::KEY_AS_PATHNAME));
-                $iterator = new RegexIterator($iterator, '/.*Command\.php$/', RecursiveRegexIterator::GET_MATCH);
+                $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($commandPath, \FilesystemIterator::KEY_AS_PATHNAME));
+                $iterator = new \RegexIterator($iterator, '/.*Command\.php$/', \RegexIterator::GET_MATCH);
                 foreach ($iterator as $matches) {
                     $file = $matches[0];
                     $relativePath = str_replace($commandPath, '', $file);
@@ -255,9 +246,9 @@ class Telegram extends Component
                         $command_name = mb_strtolower($this->sanitizeCommand(substr(basename($file), 0, -11)));
 
                         try {
-                            $commands[$command_name] = Yii::createObject($commandClass, ['telegram' => $this, 'update' => $this->update]);
-                            Yii::debug(['add command', $commandClass], 'telegram');
-                        } catch (InvalidConfigException $e) {
+                            $commands[$command_name] = \Yii::createObject($commandClass, ['telegram' => $this, 'update' => $this->update]);
+                            \Yii::debug(['add command', $commandClass], 'telegram');
+                        } catch (InvalidConfigException) {
                         }
                     }
                 }
@@ -285,7 +276,7 @@ class Telegram extends Component
      *
      * @return Command|null
      */
-    public function getCommandObject(string $command)
+    public function getCommandObject(string $command): ?Command
     {
         if (isset($this->commands_objects[$command])) {
             return $this->commands_objects[$command];
@@ -302,9 +293,9 @@ class Telegram extends Component
     /**
      * Get the ServerResponse of the last Command execution
      *
-     * @return ServerResponse
+     * @return ServerResponse|null
      */
-    public function getLastCommandResponse()
+    public function getLastCommandResponse(): ?ServerResponse
     {
         return $this->last_command_response;
     }
@@ -312,7 +303,7 @@ class Telegram extends Component
     /**
      * Handle getUpdates method
      *
-     * @param mixed $input
+     * @param mixed|null $input
      * @param int|null $limit
      * @param int|null $timeout
      *
@@ -321,7 +312,7 @@ class Telegram extends Component
      * @throws BaseException
      * @throws TelegramException
      */
-    public function handleGetUpdates($input = null, $limit = null, $timeout = null)
+    public function handleGetUpdates(mixed $input = null, int $limit = null, int $timeout = null): ServerResponse
     {
         if (empty($this->bot_username)) {
             throw new TelegramException('Bot Username is not defined!');
@@ -374,7 +365,7 @@ class Telegram extends Component
      * @throws BaseException
      * @throws TelegramException
      */
-    public function handle(string $input)
+    public function handle(string $input): bool
     {
         if (empty($this->bot_username)) {
             throw new TelegramException('Bot Username is not defined!');
@@ -384,7 +375,7 @@ class Telegram extends Component
             throw new TelegramException('Input is empty!');
         }
 
-        $post = Json::decode($input, true);
+        $post = Json::decode($input);
         if (empty($post)) {
             throw new TelegramException('Invalid JSON!');
         }
@@ -403,7 +394,7 @@ class Telegram extends Component
      *
      * @return string
      */
-    protected function getCommandFromType(string $type)
+    protected function getCommandFromType(string $type): string
     {
         return $this->ucfirstUnicode(str_replace('_', '', $type));
     }
@@ -413,12 +404,12 @@ class Telegram extends Component
      *
      * @param Update $update
      *
-     * @return ServerResponse
+     * @return ServerResponse|null
      *
-     * @throws TelegramException
      * @throws BaseException
+     * @throws TelegramException
      */
-    public function processUpdate(Update $update)
+    public function processUpdate(Update $update): ?ServerResponse
     {
         $this->update = $update;
         $this->last_update_id = $update->updateId;
@@ -427,12 +418,12 @@ class Telegram extends Component
             $reason = 'Update denied by update_filter';
             try {
                 $allowed = (bool) call_user_func_array($this->update_filter, [$update, $this, &$reason]);
-            } catch (Exception $e) {
+            } catch (\Exception) {
                 $allowed = false;
             }
 
             if (!$allowed) {
-                Yii::debug($reason, 'telegram');
+                \Yii::debug($reason, 'telegram');
                 return new ServerResponse(['ok' => false, 'description' => 'denied']);
             }
         }
@@ -467,7 +458,7 @@ class Telegram extends Component
         //Make sure we don't try to process update that was already processed
         $last_update = Storage::telegramUpdateSelect($this->update->updateId);
         if ($last_update !== null) {
-            Yii::debug('Duplicate update received, processing aborted!', 'telegram');
+            \Yii::debug('Duplicate update received, processing aborted!', 'telegram');
             return $this->requestInstance->emptyResponse();
         }
 
@@ -481,20 +472,15 @@ class Telegram extends Component
      *
      * @param string $command
      *
-     * @return ServerResponse
+     * @return ServerResponse|null
      *
      * @throws TelegramException
-     * @throws BaseException
      */
-    public function executeCommand(string $command)
+    public function executeCommand(string $command): ?ServerResponse
     {
         $command = mb_strtolower($command);
 
-        if (isset($this->commands_objects[$command])) {
-            $command_obj = $this->commands_objects[$command];
-        } else {
-            $command_obj = $this->getCommandObject($command);
-        }
+        $command_obj = $this->commands_objects[$command] ?? $this->getCommandObject($command);
 
         if (!$command_obj || !$command_obj->isEnabled()) {
             //Failsafe in case the Generic command can't be found
@@ -502,7 +488,7 @@ class Telegram extends Component
                 throw new TelegramException('Generic command missing!');
             }
 
-            //Handle a generic command or non existing one
+            //Handle a generic command or non-existing one
             $this->last_command_response = $this->executeCommand(self::GENERIC_COMMAND);
         } else {
             // execute() method is executed after preExecute()
@@ -521,7 +507,7 @@ class Telegram extends Component
      *
      * @return string
      */
-    protected function sanitizeCommand(string $command)
+    protected function sanitizeCommand(string $command): string
     {
         return str_replace(' ', '', $this->ucwordsUnicode(str_replace('_', ' ', $command)));
     }
@@ -533,11 +519,11 @@ class Telegram extends Component
      *
      * @return Telegram
      */
-    public function enableAdmin($admin_id)
+    public function enableAdmin(int|string $admin_id): static
     {
         $admin_id = intval($admin_id);
         if ($admin_id <= 0) {
-            Yii::error('Invalid value "' . $admin_id . '" for admin.', 'telegram');
+            \Yii::error('Invalid value "' . $admin_id . '" for admin.', 'telegram');
         } elseif (!in_array($admin_id, $this->admins, true)) {
             $this->admins[] = $admin_id;
         }
@@ -552,7 +538,7 @@ class Telegram extends Component
      *
      * @return Telegram
      */
-    public function enableAdmins(array $admin_ids)
+    public function enableAdmins(array $admin_ids): static
     {
         foreach ($admin_ids as $admin_id) {
             $this->enableAdmin($admin_id);
@@ -566,7 +552,7 @@ class Telegram extends Component
      *
      * @return array
      */
-    public function getAdminList()
+    public function getAdminList(): array
     {
         return $this->admins;
     }
@@ -580,7 +566,7 @@ class Telegram extends Component
      *
      * @return bool
      */
-    public function isAdmin($user_id = null)
+    public function isAdmin(int $user_id = null): bool
     {
         if ($user_id === null && $this->update !== null) {
             //Try to figure out if the user is an admin
@@ -603,7 +589,7 @@ class Telegram extends Component
             }
         }
 
-        return ($user_id === null) ? false : in_array($user_id, $this->admins, true);
+        return !($user_id === null) && in_array($user_id, $this->admins, true);
     }
 
     /**
@@ -614,7 +600,7 @@ class Telegram extends Component
      *
      * @return Telegram
      */
-    public function addCommandsNamespace(string $ns, $before = true)
+    public function addCommandsNamespace(string $ns, bool $before = true): static
     {
         if (!in_array($ns, $this->commandsNamespaces, true)) {
             if ($before) {
@@ -631,11 +617,11 @@ class Telegram extends Component
      * Add multiple custom commands paths
      *
      * @param array $namespaces Custom commands paths to add
-     * @param bool  $before If the paths should be prepended or appended to the list
+     * @param bool $before If the paths should be prepended or appended to the list
      *
      * @return Telegram
      */
-    public function addCommandsNamepaces(array $namespaces, $before = true)
+    public function addCommandsNamepaces(array $namespaces, bool $before = true): static
     {
         foreach ($namespaces as $ns) {
             $this->addCommandsNamespace($ns, $before);
@@ -649,7 +635,7 @@ class Telegram extends Component
      *
      * @return array
      */
-    public function getCommandsNamespaces()
+    public function getCommandsNamespaces(): array
     {
         return $this->commandsNamespaces;
     }
@@ -658,7 +644,7 @@ class Telegram extends Component
      * Set command config
      *
      * Provide further variables to a particular commands.
-     * For example you can add the channel name at the command /sendtochannel
+     * For example, you can add the channel name at the command /sendtochannel
      * Or you can add the api key for external service.
      *
      * @param string $command
@@ -666,7 +652,7 @@ class Telegram extends Component
      *
      * @return Telegram
      */
-    public function setCommandConfig(string $command, array $config)
+    public function setCommandConfig(string $command, array $config): static
     {
         $this->commands_config[$command] = $config;
 
@@ -680,15 +666,15 @@ class Telegram extends Component
      *
      * @return array
      */
-    public function getCommandConfig(string $command)
+    public function getCommandConfig(string $command): array
     {
-        return isset($this->commands_config[$command]) ? $this->commands_config[$command] : [];
+        return $this->commands_config[$command] ?? [];
     }
 
     /**
      * Clear all config
      */
-    public function clearCommandsConfig()
+    public function clearCommandsConfig(): void
     {
         $this->commands_config = [];
     }
@@ -698,7 +684,7 @@ class Telegram extends Component
      *
      * @return string
      */
-    public function getApiKey()
+    public function getApiKey(): string
     {
         return $this->api_key;
     }
@@ -708,7 +694,7 @@ class Telegram extends Component
      *
      * @return string
      */
-    public function getBotUsername()
+    public function getBotUsername(): string
     {
         return $this->bot_username;
     }
@@ -718,7 +704,7 @@ class Telegram extends Component
      *
      * @return string
      */
-    public function getBotId()
+    public function getBotId(): string
     {
         return $this->bot_id;
     }
@@ -733,7 +719,7 @@ class Telegram extends Component
      *
      * @throws TelegramException
      */
-    public function setWebhook(string $url, array $data = [])
+    public function setWebhook(string $url, array $data = []): ServerResponse
     {
         if (empty($url)) {
             throw new TelegramException('Hook url is empty!');
@@ -748,7 +734,7 @@ class Telegram extends Component
 
         // If the certificate is passed as a path, encode and add the file to the data array.
         if (!empty($data['certificate']) && is_string($data['certificate'])) {
-            $data['certificate'] = new CURLFile($data['certificate']);
+            $data['certificate'] = new \CURLFile($data['certificate']);
         }
 
         $result = $this->requestInstance->setWebhook($data);
@@ -769,7 +755,7 @@ class Telegram extends Component
      *
      * @throws TelegramException
      */
-    public function deleteWebhook()
+    public function deleteWebhook(): ServerResponse
     {
         $result = $this->requestInstance->deleteWebhook();
 
@@ -790,7 +776,7 @@ class Telegram extends Component
      *
      * @return string
      */
-    protected function ucwordsUnicode(string $str, $encoding = 'UTF-8')
+    protected function ucwordsUnicode(string $str, string $encoding = 'UTF-8'): string
     {
         return mb_convert_case($str, MB_CASE_TITLE, $encoding);
     }
@@ -803,7 +789,7 @@ class Telegram extends Component
      *
      * @return string
      */
-    protected function ucfirstUnicode(string $str, $encoding = 'UTF-8')
+    protected function ucfirstUnicode(string $str, string $encoding = 'UTF-8'): string
     {
         return mb_strtoupper(mb_substr($str, 0, 1, $encoding), $encoding)
             . mb_strtolower(mb_substr($str, 1, mb_strlen($str), $encoding), $encoding);
@@ -817,7 +803,7 @@ class Telegram extends Component
      * @return Telegram
      * @throws TelegramException
      */
-    public function enableLimiter(array $options = [])
+    public function enableLimiter(array $options = []): static
     {
         $this->requestInstance->setLimiter(true, $options);
 
@@ -832,9 +818,9 @@ class Telegram extends Component
      * @throws BaseException
      * @throws TelegramException
      */
-    public function runCommands(array $commands)
+    public function runCommands(array $commands): void
     {
-        if (!is_array($commands) || empty($commands)) {
+        if (empty($commands)) {
             throw new TelegramException('No command(s) provided!');
         }
 
@@ -894,7 +880,7 @@ class Telegram extends Component
      *
      * @return bool
      */
-    public function isRunCommands()
+    public function isRunCommands(): bool
     {
         return $this->run_commands;
     }
@@ -902,9 +888,9 @@ class Telegram extends Component
     /**
      * Return last update id
      *
-     * @return int
+     * @return int|null
      */
-    public function getLastUpdateId()
+    public function getLastUpdateId(): ?int
     {
         return $this->last_update_id;
     }
@@ -916,7 +902,7 @@ class Telegram extends Component
      *
      * @return Telegram
      */
-    public function setUpdateFilter(callable $callback)
+    public function setUpdateFilter(callable $callback): static
     {
         $this->update_filter = $callback;
 
@@ -928,12 +914,12 @@ class Telegram extends Component
      *
      * @return callable|null
      */
-    public function getUpdateFilter()
+    public function getUpdateFilter(): ?callable
     {
         return $this->update_filter;
     }
 
-    public function getVersion()
+    public function getVersion(): string
     {
         return $this->version;
     }

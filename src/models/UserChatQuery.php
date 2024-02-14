@@ -1,25 +1,20 @@
 <?php
 namespace onix\telegram\models;
 
-use onix\data\ActiveQueryEx;
+use yii\mongodb\ActiveQuery;
 
 /**
  * This is the ActiveQuery class for [[UserChat]].
  *
  * @see UserChat
  */
-class UserChatQuery extends ActiveQueryEx
+class UserChatQuery extends ActiveQuery
 {
-    /*public function active()
-    {
-        return $this->andWhere('[[status]]=1');
-    }*/
-
     /**
      * {@inheritdoc}
      * @return UserChat[]|array
      */
-    public function all($db = null)
+    public function all($db = null): array
     {
         return parent::all($db);
     }
@@ -28,7 +23,7 @@ class UserChatQuery extends ActiveQueryEx
      * {@inheritdoc}
      * @return UserChat|array|null
      */
-    public function one($db = null)
+    public function one($db = null): ?UserChat
     {
         return parent::one($db);
     }

@@ -13,7 +13,7 @@ class InlineKeyboard extends Keyboard
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['resizeKeyboard', 'oneTimeKeyboard', 'selective', 'keyboard', 'inlineKeyboard'];
     }

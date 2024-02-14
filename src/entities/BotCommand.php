@@ -18,7 +18,7 @@ class BotCommand extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['command', 'description'];
     }

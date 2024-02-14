@@ -20,7 +20,7 @@ class PassportData extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['data', 'credentials'];
     }
@@ -28,7 +28,7 @@ class PassportData extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'data' => [EncryptedPassportElement::class],

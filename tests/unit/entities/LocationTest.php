@@ -1,9 +1,11 @@
-<?php
-namespace tests\unit\entities;
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
 
+namespace onix\telegram\tests\unit\entities;
+
+use Codeception\Test\Unit;
 use onix\telegram\entities\Location;
 
-class LocationTest extends \Codeception\Test\Unit
+class LocationTest extends Unit
 {
     private $coordinates;
 

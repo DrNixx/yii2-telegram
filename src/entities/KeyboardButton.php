@@ -23,15 +23,25 @@ use Yii;
  *
  * @property KeyboardButtonPollType $requestPoll Optional. If specified, the user will be asked to create
  * a poll and send it to the bot when the button is pressed. Available in private chats only
+ *
+ * @property WebAppInfo $webApp Optional. If specified, the described Web App will be launched when the
+ * button is pressed. The Web App will be able to send a “web_app_data” service message. Available in private chats only.
  */
 class KeyboardButton extends Entity
 {
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
-        return ['text', 'requestContact', 'requestLocation', 'requestPoll'];
+        return ['text', 'requestContact', 'requestLocation', 'requestPoll', 'webApp'];
+    }
+
+    public function subEntities(): array
+    {
+        return [
+            'webApp' => WebAppInfo::class,
+        ];
     }
 
     /**

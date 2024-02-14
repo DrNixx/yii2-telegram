@@ -46,7 +46,7 @@ class InputInvoiceMessageContent extends Entity implements InputMessageContent
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return [
             'title',
@@ -72,7 +72,7 @@ class InputInvoiceMessageContent extends Entity implements InputMessageContent
         ];
     }
 
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'prices' => LabeledPrice::class

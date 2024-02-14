@@ -15,9 +15,11 @@ namespace onix\telegram\entities;
  * @property-read string $username Optional. Username, for private chats, supergroups and channels if available
  * @property-read string $firstName Optional. First name of the other party in a private chat
  * @property-read string $lastName Optional. Last name of the other party in a private chat
+ * @property-read bool $isForum Optional. True, if the supergroup chat is a forum (has topics enabled)
  * @property-read ChatPhoto $photo Optional. Chat photo. Returned only in getChat.
  * @property-read bool $hasPrivateForwards Optional. True, if privacy settings of the other party in the private
  * chat allows to use tg://user?id=<user_id> links only in chats with the user. Returned only in getChat.
+ *
  * @property-read string $description Optional. Description, for groups, supergroups and channel chats.
  * Returned only in getChat.
  *
@@ -48,7 +50,7 @@ class Chat extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return [
             'id',
@@ -57,6 +59,7 @@ class Chat extends Entity
             'username',
             'firstName',
             'lastName',
+            'isForum',
             'photo',
             'hasPrivateForwards',
             'description',
@@ -74,7 +77,7 @@ class Chat extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'photo' => ChatPhoto::class,
@@ -102,7 +105,7 @@ class Chat extends Entity
      *
      * @return string|null
      */
-    public function tryMention(bool $escape_markdown = false)
+    public function tryMention(bool $escape_markdown = false): ?string
     {
         if ($this->isPrivateChat()) {
             return parent::tryMention($escape_markdown);

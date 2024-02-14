@@ -39,7 +39,7 @@ class Keyboard extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['resizeKeyboard', 'oneTimeKeyboard', 'selective', 'removeKeyboard', 'forceReply', 'keyboard'];
     }
@@ -58,7 +58,7 @@ class Keyboard extends Entity
      *
      * @throws TelegramException
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -74,7 +74,7 @@ class Keyboard extends Entity
         }
     }
 
-    public function rules()
+    public function rules(): array
     {
         return [
             [['resizeKeyboard', 'oneTimeKeyboard', 'selective'], 'boolean'],
@@ -85,7 +85,7 @@ class Keyboard extends Entity
     /**
      * @param string $attribute
      */
-    public function validateKeyboard($attribute)
+    public function validateKeyboard(string $attribute): void
     {
         $keyboard_type = $this->keyboardType;
         $keyboard = $this->getAttribute($keyboard_type);
@@ -126,7 +126,7 @@ class Keyboard extends Entity
      *
      * @return bool
      */
-    public function isInlineKeyboard()
+    public function isInlineKeyboard(): bool
     {
         return $this instanceof InlineKeyboard;
     }
@@ -136,7 +136,7 @@ class Keyboard extends Entity
      *
      * @return string
      */
-    public function getKeyboardButtonClass()
+    public function getKeyboardButtonClass(): string
     {
         return $this->isInlineKeyboard() ? InlineKeyboardButton::class : KeyboardButton::class;
     }
@@ -146,7 +146,7 @@ class Keyboard extends Entity
      *
      * @return string
      */
-    public function getKeyboardType()
+    public function getKeyboardType(): string
     {
         return $this->isInlineKeyboard() ? 'inlineKeyboard' : 'keyboard';
     }
@@ -156,7 +156,7 @@ class Keyboard extends Entity
      *
      * @return array
      */
-    protected function createFromParams()
+    protected function createFromParams(): array
     {
         $keyboard_type = $this->keyboardType;
 
@@ -168,14 +168,26 @@ class Keyboard extends Entity
         }
         unset($arg);
 
-        $data = reset($args);
+        $dataRaw = reset($args);
+        $data = [];
+        foreach ($dataRaw as $key => $item) {
+            if (is_string($key)) {
+                $ccKey = $this->toCamelCase($key);
+                if ($ccKey != $key) {
+                    $key = $ccKey;
+                }
+            }
 
-        if ($from_data = array_key_exists($keyboard_type, (array) $data)) {
+            $data[$key] = $item;
+        }
+
+        if ($from_data = array_key_exists($keyboard_type, $data)) {
             $args = $data[$keyboard_type];
 
             // Make sure we're working with a proper row.
             if (!is_array($args)) {
                 $args = [];
+                $data[$keyboard_type] = [];
             }
         }
 
@@ -199,7 +211,7 @@ class Keyboard extends Entity
      *
      * @return $this
      */
-    public function addRow()
+    public function addRow(): static
     {
         if (($new_row = $this->parseRow(func_get_args())) !== null) {
             $rows = $this->getAttribute($this->keyboardType);
@@ -221,11 +233,11 @@ class Keyboard extends Entity
     /**
      * Parse a given row to the correct array format.
      *
-     * @param array $row
+     * @param $row
      *
-     * @return array
+     * @return array|null
      */
-    protected function parseRow($row)
+    protected function parseRow($row): ?array
     {
         if (!is_array($row)) {
             return null;

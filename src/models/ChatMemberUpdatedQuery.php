@@ -1,15 +1,15 @@
 <?php
 namespace onix\telegram\models;
 
-use onix\data\ActiveQueryEx;
+use yii\mongodb\ActiveQuery;
 
-class ChatMemberUpdatedQuery extends ActiveQueryEx
+class ChatMemberUpdatedQuery extends ActiveQuery
 {
     /**
      * {@inheritdoc}
      * @return ChatMemberUpdated[]|array
      */
-    public function all($db = null)
+    public function all($db = null): array
     {
         return parent::all($db);
     }
@@ -18,7 +18,7 @@ class ChatMemberUpdatedQuery extends ActiveQueryEx
      * {@inheritdoc}
      * @return ChatMemberUpdated|array|null
      */
-    public function one($db = null)
+    public function one($db = null): ?ChatMemberUpdated
     {
         return parent::one($db);
     }

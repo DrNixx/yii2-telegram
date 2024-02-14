@@ -2,9 +2,21 @@
 namespace onix\telegram\entities;
 
 use onix\telegram\entities\games\Game;
+use onix\telegram\entities\giveaway\Giveaway;
+use onix\telegram\entities\giveaway\GiveawayCompleted;
+use onix\telegram\entities\giveaway\GiveawayCreated;
+use onix\telegram\entities\giveaway\GiveawayWinners;
+use onix\telegram\entities\messageOrigin\Factory as MessageOriginFactory;
+use onix\telegram\entities\messageOrigin\MessageOrigin;
 use onix\telegram\entities\passport\PassportData;
 use onix\telegram\entities\payments\Invoice;
 use onix\telegram\entities\payments\SuccessfulPayment;
+use onix\telegram\entities\topics\ForumTopicClosed;
+use onix\telegram\entities\topics\ForumTopicCreated;
+use onix\telegram\entities\topics\ForumTopicEdited;
+use onix\telegram\entities\topics\ForumTopicReopened;
+use onix\telegram\entities\topics\GeneralForumTopicHidden;
+use onix\telegram\entities\topics\GeneralForumTopicUnhidden;
 
 /**
  * Class Message
@@ -20,6 +32,7 @@ use onix\telegram\entities\payments\SuccessfulPayment;
  * for messages automatically forwarded to the discussion group
  * @property-read int $date Date the message was sent in Unix time
  * @property-read Chat $chat Conversation the message belongs to
+ * @property-read MessageOrigin $forwardOrigin Optional. Information about the original message for forwarded messages
  * @property-read User $forwardFrom Optional. For forwarded messages, sender of the original message
  * @property-read Chat $forwardFromChat Optional. For messages forwarded from a channel, information about
  * the original channel
@@ -63,6 +76,7 @@ use onix\telegram\entities\payments\SuccessfulPayment;
  * @property-read Game $game Optional. Message is a game, information about the game.
  * @property-read PhotoSize[] $photo Optional. Message is a photo, available sizes of the photo
  * @property-read Sticker $sticker Optional. Message is a sticker, information about the sticker
+ * @property-read Story $story Optional. Message is a forwarded story
  * @property-read Video $video Optional. Message is a video, information about the video
  * @property-read Voice $voice Optional. Message is a voice message, information about the file
  * @property-read VideoNote $videoNote Optional. Message is a video note message, information about the video
@@ -111,19 +125,39 @@ use onix\telegram\entities\payments\SuccessfulPayment;
  * @property-read SuccessfulPayment $successfulPayment Optional. Message is a service message about a successful
  * payment, information about the payment.
  *
+ * @property-read UserShared $userShared Optional. Depricated. Service message: users were shared with the bot
+ * @property-read UsersShared $usersShared Optional. Service message: users were shared with the bot
+ * @property-read ChatShared $chatShared Optional. Service message: a chat was shared with the bot
+ *
  * @property-read string $connectedWebsite Optional. The domain name of the website on which the user has logged in.
  * @property-read PassportData $passportData Optional. Telegram Passport data
  *
- * @property-read ProximityAlertTriggered $proximityAlertTriggered	Optional. Service message. A user in the chat triggered another user's proximity alert while sharing Live Location.
+ * @property-read ProximityAlertTriggered $proximityAlertTriggered	Optional. Service message. A user in the chat
+ * triggered another user's proximity alert while sharing Live Location.
  *
- * @property-read VoiceChatStarted $voiceChatStarted Optional. Service message: voice chat started
- * @property-read VoiceChatEnded $voiceChatEnded Optional. Service message: voice chat ended
- * @property-read VoiceChatParticipantsInvited $voiceChatParticipantsInvited Optional. Service message: new participants invited to a voice chat
+ * @property-read ForumTopicCreated $forumTopicCreated Optional. Service message: forum topic created
+ * @property-read ForumTopicEdited $forumTopicEdited Optional. Service message: forum topic edited
+ * @property-read ForumTopicClosed $forumTopicClosed Optional. Service message: forum topic closed
+ * @property-read ForumTopicReopened $forumTopicReopened Optional. Service message: forum topic reopened
+ * @property-read GeneralForumTopicHidden $generalForumTopicHidden Optional. Service message: the 'General' forum topic hidden
+ * @property-read GeneralForumTopicUnhidden $generalForumTopicUnhidden Optional. Service message: the 'General' forum topic unhidden
+ *
+ * @property-read GiveawayCreated $giveawayCreated Optional. Service message: a scheduled giveaway was created
+ * @property-read Giveaway $giveaway Optional. The message is a scheduled giveaway message
+ * @property-read GiveawayWinners $giveawayWinners Optional. A giveaway with public winners was completed
+ * @property-read GiveawayCompleted $giveawayCompleted Optional. Service message: a giveaway without public winners was completed
+ *
+ * @property-read VideoChatScheduled $videoChatScheduled Optional. Service message: voice chat scheduled
+ * @property-read VideoChatStarted $videoChatStarted Optional. Service message: voice chat started
+ * @property-read VideoChatEnded $videoChatEnded Optional. Service message: voice chat ended
+ * @property-read VideoChatParticipantsInvited $videoChatParticipantsInvited Optional. Service message: new participants invited to a voice chat
+ *
+ * @property-read WebAppData $webAppData Optional. Service message: data sent by a Web App
  *
  * @property-read InlineKeyboard $replyMarkup Optional. Inline keyboard attached to the message. login_url buttons are
  * represented as ordinary url buttons.
  *
- * @property string $editedMessageId
+ * @property object $editedMessageId
  *
  * @property-read string $command
  * @property-read string $fullCommand
@@ -134,7 +168,7 @@ class Message extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return [
             'messageId',
@@ -143,6 +177,7 @@ class Message extends Entity
             'senderChat',
             'date',
             'chat',
+            'forwardOrigin',
             'forwardFrom',
             'forwardFromChat',
             'forwardFromMessageId',
@@ -164,6 +199,7 @@ class Message extends Entity
             'document',
             'photo',
             'sticker',
+            'story',
             'video',
             'videoNote',
             'voice',
@@ -192,13 +228,27 @@ class Message extends Entity
             'pinnedMessage',
             'invoice',
             'successfulPayment',
+            'userShared',
+            'usersShared',
+            'chatShared',
             'connectedWebsite',
             'passportData',
             'proximityAlertTriggered',
-            'voiceChatScheduled',
-            'voiceChatStarted',
-            'voiceChatEnded',
-            'voiceChatParticipantsInvited',
+            'forumTopicCreated',
+            'forumTopicEdited',
+            'forumTopicClosed',
+            'forumTopicReopened',
+            'generalForumTopicHidden',
+            'generalForumTopicUnhidden',
+            'giveawayCreated',
+            'giveaway',
+            'giveawayWinners',
+            'giveawayCompleted',
+            'videoChatScheduled',
+            'videoChatStarted',
+            'videoChatEnded',
+            'videoChatParticipantsInvited',
+            'webAppData',
             'replyMarkup',
             'editedMessageId'
         ];
@@ -207,12 +257,13 @@ class Message extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'from' => User::class,
             'senderChat' => Chat::class,
             'chat' => Chat::class,
+            'forwardOrigin' => MessageOriginFactory::class,
             'forwardFrom' => User::class,
             'forwardFromChat' => Chat::class,
             'replyToMessage' => ReplyToMessage::class,
@@ -225,6 +276,7 @@ class Message extends Entity
             'game' => Game::class,
             'photo' => [PhotoSize::class],
             'sticker' => Sticker::class,
+            'story' => Story::class,
             'video' => Video::class,
             'voice' => Voice::class,
             'videoNote' => VideoNote::class,
@@ -239,12 +291,26 @@ class Message extends Entity
             'pinnedMessage' => Message::class,
             'invoice' => Invoice::class,
             'successfulPayment' => SuccessfulPayment::class,
+            'userShared' => UserShared::class,
+            'usersShared' => UsersShared::class,
+            'chatShared' => ChatShared::class,
             'passportData' => PassportData::class,
             'proximityAlertTriggered' => ProximityAlertTriggered::class,
-            'voiceChatScheduled' => VoiceChatScheduled::class,
-            'voiceChatStarted' => VoiceChatStarted::class,
-            'voiceChatEnded' => VoiceChatEnded::class,
-            'voiceChatParticipantsInvited' => VoiceChatParticipantsInvited::class,
+            'forumTopicCreated' => ForumTopicCreated::class,
+            'forumTopicEdited' => ForumTopicEdited::class,
+            'forumTopicClosed' => ForumTopicClosed::class,
+            'forumTopicReopened' => ForumTopicReopened::class,
+            'generalForumTopicHidden' => GeneralForumTopicHidden::class,
+            'generalForumTopicUnhidden' => GeneralForumTopicUnhidden::class,
+            'giveawayCreated' => GiveawayCreated::class,
+            'giveaway' => Giveaway::class,
+            'giveawayWinners' => GiveawayWinners::class,
+            'giveawayCompleted' => GiveawayCompleted::class,
+            'videoChatScheduled' => VideoChatScheduled::class,
+            'videoChatStarted' => VideoChatStarted::class,
+            'videoChatEnded' => VideoChatEnded::class,
+            'videoChatParticipantsInvited' => VideoChatParticipantsInvited::class,
+            'webAppData' => WebAppData::class,
             'messageAutoDeleteTimerChanged' => MessageAutoDeleteTimerChanged::class,
             'replyMarkup' => InlineKeyboard::class,
         ];
@@ -255,10 +321,10 @@ class Message extends Entity
      *
      * @return string|null
      */
-    public function getFullCommand()
+    public function getFullCommand(): ?string
     {
         $text = $this->text;
-        if (strpos($text, '/') !== 0) {
+        if (!str_starts_with($text ?? '', '/')) {
             return null;
         }
 
@@ -274,10 +340,10 @@ class Message extends Entity
      *
      * @return string|null
      */
-    public function getCommand()
+    public function getCommand(): ?string
     {
         $full_command = $this->fullCommand;
-        if (strpos($full_command, '/') !== 0) {
+        if (!str_starts_with($full_command ?? '', '/')) {
             return null;
         }
         $full_command = substr($full_command, 1);
@@ -304,7 +370,7 @@ class Message extends Entity
      *
      * @return string
      */
-    public function getMessageText($without_cmd = false)
+    public function getMessageText(bool $without_cmd = false): string
     {
         $text = $this->getAttribute('text');
 
@@ -324,7 +390,7 @@ class Message extends Entity
      *
      * @return bool
      */
-    public function botAddedInChat()
+    public function botAddedInChat(): bool
     {
         foreach ($this->newChatMembers as $member) {
             if ($member instanceof User && $member->username === $this->telegram->botUsername) {
@@ -340,7 +406,7 @@ class Message extends Entity
      *
      * @return string
      */
-    public function getType()
+    public function getType(): string
     {
         $types = [
             'text',

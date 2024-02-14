@@ -17,7 +17,7 @@ class ProximityAlertTriggered extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return [
             'traveler',
@@ -29,7 +29,7 @@ class ProximityAlertTriggered extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'traveler' => User::class,

@@ -9,7 +9,7 @@ use onix\telegram\entities\chatMember\Factory as ChatMemberFactory;
  *
  * @link https://core.telegram.org/bots/api#chatmemberupdated
  *
- * @property-read  Chat $chat Chat the user belongs to
+ * @property-read Chat $chat Chat the user belongs to
  * @property-read User $from Performer of the action, which resulted in the change
  * @property-read int $date	Date the change was done in Unix time
  * @property-read ChatMember $oldChatMember Previous information about the chat member
@@ -21,7 +21,7 @@ class ChatMemberUpdated extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return [
             'chat',
@@ -36,7 +36,7 @@ class ChatMemberUpdated extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'chat' => Chat::class,

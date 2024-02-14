@@ -18,7 +18,7 @@ class PollAnswer extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['pollId', 'user', 'optionIds'];
     }
@@ -26,7 +26,7 @@ class PollAnswer extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'user' => User::class,

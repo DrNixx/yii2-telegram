@@ -1,103 +1,64 @@
 <?php
 namespace onix\telegram\models;
 
-use onix\data\ActiveRecordEx;
-use yii\behaviors\TimestampBehavior;
-use yii\db\ActiveQuery;
-use yii\db\ActiveRecord;
-use yii\db\Expression;
+use onix\telegram\entities\InlineQuery as InlineQueryEntity;
 
 /**
  * This is the model class for table "telegram.inline_query".
  *
- * @property int $id Unique identifier for this query
- * @property int $user_id Unique user identifier
+ * @property string $_id Unique identifier for this query
+ * @property int $userId Unique user identifier
  * @property string|null $location Location of the user
  * @property string $query Text of the query
  * @property string|null $offset Offset of the result
- * @property string $created_at Entry date creation
  *
  * @property TelegramUpdate[] $telegramUpdates
  * @property User $user
  */
-class InlineQuery extends ActiveRecordEx
+class InlineQuery extends TelegramActiveRecord
 {
+    protected ?string $entityClass = InlineQueryEntity::class;
+
+    protected array $attributeMap = [
+        'id' => '_id',
+        'from' => 'userId'
+    ];
+
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function collectionName(): array|string
     {
-        return 'telegram.inline_query';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function behaviors()
-    {
-        $now = (self::getDb()->driverName === 'pgsql') ? "timezone('GMT'::text, now())" : 'now()';
-
-        return [
-            [
-                'class' => TimestampBehavior::class,
-                'attributes' => [
-                    ActiveRecord::EVENT_BEFORE_INSERT => ['created_at'],
-                    ActiveRecord::EVENT_BEFORE_UPDATE => [],
-                ],
-                'value' => new Expression($now),
-            ],
-        ];
+        return 'telegram_inline_query';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
-            [['id', 'user_id', 'query'], 'required'],
-            [['id', 'user_id'], 'default', 'value' => null],
-            [['id', 'user_id'], 'number'],
-            [['query'], 'string'],
-            [['created_at'], 'safe'],
+            [['userId', 'query'], 'required'],
+            [['userId'], 'integer'],
+            [['_id', 'query'], 'string'],
             [['location', 'offset'], 'string', 'max' => 255],
-            [['id'], 'unique'],
+            [['location'], 'safe'],
             [
-                ['user_id'],
+                ['userId'],
                 'exist',
                 'skipOnError' => true,
                 'targetClass' => User::class,
-                'targetAttribute' => ['user_id' => 'id']
+                'targetAttribute' => ['userId' => '_id']
             ],
         ];
-    }
-
-    /**
-     * Gets query for [[TelegramUpdates]].
-     *
-     * @return ActiveQuery|TelegramUpdateQuery
-     */
-    public function getTelegramUpdates()
-    {
-        return $this->hasMany(TelegramUpdate::class, ['inline_query_id' => 'id']);
-    }
-
-    /**
-     * Gets query for [[User]].
-     *
-     * @return ActiveQuery|UserQuery
-     */
-    public function getUser()
-    {
-        return $this->hasOne(User::class, ['id' => 'user_id']);
     }
 
     /**
      * {@inheritdoc}
      * @return InlineQueryQuery the active query used by this AR class.
      */
-    public static function find($alias = null)
+    public static function find(): InlineQueryQuery
     {
-        return new InlineQueryQuery(get_called_class(), ['as' => $alias]);
+        return new InlineQueryQuery(get_called_class());
     }
 }

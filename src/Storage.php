@@ -1,8 +1,12 @@
 <?php
 namespace onix\telegram;
 
+use MongoDB\BSON\UTCDateTime;
 use onix\telegram\entities\CallbackQuery;
 use onix\telegram\entities\Chat;
+use onix\telegram\entities\chatBoost\ChatBoostRemoved;
+use onix\telegram\entities\chatBoost\ChatBoostUpdated as ChatBoostUpdated;
+use onix\telegram\entities\ChatJoinRequest;
 use onix\telegram\entities\ChatMemberUpdated;
 use onix\telegram\entities\ChosenInlineResult;
 use onix\telegram\entities\EditedChannelPost;
@@ -14,17 +18,24 @@ use onix\telegram\entities\payments\PreCheckoutQuery;
 use onix\telegram\entities\payments\ShippingQuery;
 use onix\telegram\entities\Poll;
 use onix\telegram\entities\PollAnswer;
+use onix\telegram\entities\reaction\MessageReactionCountUpdated;
+use onix\telegram\entities\reaction\MessageReactionUpdated;
 use onix\telegram\entities\Update;
 use onix\telegram\entities\User;
 use onix\telegram\exceptions\TelegramException;
 use onix\telegram\models\CallbackQuery as CallbackQueryRepo;
 use onix\telegram\models\Chat as ChatRepo;
+use onix\telegram\models\ChatBoostRemoved as ChatBoostRemovedRepo;
+use onix\telegram\models\ChatBoostUpdated as ChatBoostUpdatedRepo;
+use onix\telegram\models\ChatJoinRequest as ChatJoinRequestRepo;
 use onix\telegram\models\ChatMemberUpdated as ChatMemberUpdatedRepo;
 use onix\telegram\models\ChosenInlineResult as ChosenInlineResultRepo;
 use onix\telegram\models\Conversation as ConversationRepo;
 use onix\telegram\models\EditedMessage as EditedMessageRepo;
 use onix\telegram\models\InlineQuery as InlineQueryRepo;
 use onix\telegram\models\Message as MessageRepo;
+use onix\telegram\models\MessageReactionCountUpdated as MessageReactionCountUpdatedRepo;
+use onix\telegram\models\MessageReactionUpdated as MessageReactionUpdatedRepo;
 use onix\telegram\models\Poll as PollRepo;
 use onix\telegram\models\PollAnswer as PollAnswerRepo;
 use onix\telegram\models\PreCheckoutQuery as PreCheckoutQueryRepo;
@@ -33,8 +44,7 @@ use onix\telegram\models\ShippingQuery as ShippingQueryRepo;
 use onix\telegram\models\TelegramUpdate as TelegramUpdateRepo;
 use onix\telegram\models\User as TelegramUserRepo;
 use onix\telegram\models\UserChat as UserChatRepo;
-use Yii;
-use yii\base\Exception as BaseException;
+use yii\db\BaseActiveRecord;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
 
@@ -45,7 +55,7 @@ class Storage
      *
      * @var Telegram
      */
-    protected static $telegram;
+    protected static Telegram $telegram;
 
     /**
      * Fetch message(s) from DB
@@ -54,7 +64,7 @@ class Storage
      *
      * @return MessageRepo[] Fetched data or false if not connected
      */
-    public static function selectMessages($limit = null)
+    public static function selectMessages(?int $limit = null): array
     {
         $query = MessageRepo::find()->orderBy(['id' => SORT_DESC]);
         if ($limit !== null) {
@@ -64,27 +74,37 @@ class Storage
         return $query->all();
     }
 
+    protected static function getRepoError(string $msg, BaseActiveRecord $repo): string
+    {
+        $result = $msg;
+        if (YII_DEBUG) {
+            $result .= ": " . print_r($repo->errors, true);
+        }
+
+        return $result;
+    }
+
     /**
      * Convert from unix timestamp to timestamp
      *
      * @param int|null $time Unix timestamp (if empty, current timestamp is used)
      *
-     * @return string
+     * @return UTCDateTime|null
      */
-    protected static function getTimestamp($time = null)
+    protected static function getTimestamp(?int $time = null): ?UTCDateTime
     {
-        return date('Y-m-d H:i:s', $time ?: time());
+        return $time ? new UTCDateTime($time * 1000) : null;
     }
 
     /**
      * Convert array of Entity items to a JSON array
      *
      * @param Entity|null $entity
-     * @param mixed $default
+     * @param mixed|null $default
      *
      * @return mixed
      */
-    public static function entityToJson(?Entity $entity, $default = null)
+    public static function entityToJson(?Entity $entity, mixed $default = null): mixed
     {
         if ($entity === null) {
             return $default;
@@ -97,11 +117,11 @@ class Storage
      * Convert array of Entity items to a JSON array
      *
      * @param Entity[]|null $entities
-     * @param mixed $default
+     * @param mixed|null $default
      *
      * @return mixed
      */
-    public static function entitiesArrayToJson(?array $entities, $default = null)
+    public static function entitiesArrayToJson(?array $entities, mixed $default = null): mixed
     {
         if (($entities === null) && !is_array($entities)) {
             return $default;
@@ -118,13 +138,13 @@ class Storage
      *
      * @return ConversationRepo|null
      */
-    public static function conversationSelect(int $user_id, int $chat_id)
+    public static function conversationSelect(int $user_id, int $chat_id): ?ConversationRepo
     {
         //Select an active conversation
         return ConversationRepo::findOne([
             'status' => 'active',
-            'user_id' => $user_id,
-            'chat_id' => $chat_id
+            'userId' => $user_id,
+            'chatId' => $chat_id
         ]);
     }
 
@@ -135,24 +155,24 @@ class Storage
      *
      * @return bool
      *
-     * @throws BaseException
+     * @throws \Exception
      */
-    public static function conversationInsert(int $user_id, int $chat_id, string $command)
+    public static function conversationInsert(int $user_id, int $chat_id, string $command): bool
     {
-        $conversation = new ConversationRepo([
-            'user_id' => $user_id,
-            'chat_id' => $chat_id,
+        $repo = new ConversationRepo([
+            'userId' => $user_id,
+            'chatId' => $chat_id,
             'status' => 'active',
             'command' => $command,
             'notes' => '[]'
         ]);
 
-        if ($conversation->insert()) {
-            return true;
-        } else {
-            Yii::warning(['Insert conversation error', $conversation->errors], 'telegram');
-            throw new TelegramException();
+        if (!$repo->insert()) {
+            \Yii::warning(['Insert conversation error', $repo->errors], 'telegram');
+            throw new TelegramException(self::getRepoError('Insert conversation error', $repo));
         }
+
+        return true;
     }
     //</editor-fold>
 
@@ -164,13 +184,13 @@ class Storage
      *
      * @return TelegramUpdateRepo|null Fetched data or false if not connected
      */
-    public static function telegramUpdateSelect($id = null)
+    public static function telegramUpdateSelect(int $id = null): ?TelegramUpdateRepo
     {
         $query = TelegramUpdateRepo::find();
         if ($id !== null) {
-            $query->andWhere(['id' => $id]);
+            $query->andWhere(['_id' => $id]);
         } else {
-            $query->orderBy(['id' => SORT_DESC]);
+            $query->orderBy(['_id' => SORT_DESC]);
         }
 
         return $query->one();
@@ -179,84 +199,37 @@ class Storage
     /**
      * Insert entry to telegram_update table
      *
-     * @param string $update_id
-     * @param string|null $chat_id
-     * @param string|null $message_id
-     * @param string|null $edited_message_id
-     * @param string|null $channel_post_id
-     * @param string|null $edited_channel_post_id
+     * @param int $update_id
+     * @param int|null $chat_id
+     * @param int|null $message_id
+     * @param object|null $edited_message_id
+     * @param int|null $channel_post_id
+     * @param object|null $edited_channel_post_id
      * @param string|null $inline_query_id
      * @param string|null $chosen_inline_result_id
      * @param string|null $callback_query_id
      * @param string|null $shipping_query_id
      * @param string|null $pre_checkout_query_id
      * @param string|null $poll_id
-     * @param string|null $poll_answer_poll_id
-     * @param string|null $my_chat_member_updated_id
-     * @param string|null $chat_member_updated_id
+     * @param object|null $poll_answer_poll_id
+     * @param object|null $my_chat_member_updated_id
+     * @param object|null $chat_member_updated_id
      * @return bool If the insert was successful
-     * @throws BaseException
+     *
      * @throws TelegramException
      */
-    protected static function telegramUpdateInsert(
-        string $update_id,
-        $chat_id = null,
-        $message_id = null,
-        $edited_message_id = null,
-        $channel_post_id = null,
-        $edited_channel_post_id = null,
-        $inline_query_id = null,
-        $chosen_inline_result_id = null,
-        $callback_query_id = null,
-        $shipping_query_id = null,
-        $pre_checkout_query_id = null,
-        $poll_id = null,
-        $poll_answer_poll_id = null,
-        $my_chat_member_updated_id = null,
-        $chat_member_updated_id = null
-    ) {
-        if (($message_id === null) &&
-            ($edited_message_id === null) &&
-            ($channel_post_id === null) &&
-            ($edited_channel_post_id === null) &&
-            ($inline_query_id === null) &&
-            ($chosen_inline_result_id === null) &&
-            ($callback_query_id === null) &&
-            ($shipping_query_id === null) &&
-            ($pre_checkout_query_id === null) &&
-            ($poll_id === null) &&
-            ($poll_answer_poll_id === null) &&
-            ($my_chat_member_updated_id === null) &&
-            ($chat_member_updated_id === null)
-        ) {
+    protected static function telegramUpdateInsert(TelegramUpdateRepo $model): bool
+    {
+        if (count($model->dirtyAttributes) <= 1) {
             throw new TelegramException('All update fields is null');
         }
 
-        $data = [
-            'id' => $update_id,
-            'chat_id' => $chat_id,
-            'message_id' => $message_id,
-            'edited_message_id' => $edited_message_id,
-            'channel_post_id' => $channel_post_id,
-            'edited_channel_post_id' => $edited_channel_post_id,
-            'inline_query_id' => $inline_query_id,
-            'chosen_inline_result_id' => $chosen_inline_result_id,
-            'callback_query_id' => $callback_query_id,
-            'shipping_query_id' => $shipping_query_id,
-            'pre_checkout_query_id' => $pre_checkout_query_id,
-            'poll_id' => $poll_id,
-            'poll_answer_poll_id' => $poll_answer_poll_id,
-            'my_chat_member_updated_id' => $my_chat_member_updated_id,
-            'chat_member_updated_id' => $chat_member_updated_id,
-        ];
-
-        Yii::debug(['Try insert', $data], 'telegram');
-
-        $update = new TelegramUpdateRepo($data);
-
-        $result = $update->save();
+        $result = $model->save();
         if (!$result) {
-            Yii::warning(['Insert updates error', $update], 'telegram');
+            \Yii::warning(['Insert updates error', $model], 'telegram');
+            if (YII_DEBUG) {
+                throw new TelegramException(self::getRepoError('Insert updates error', $model));
+            }
         }
 
         return $result;
@@ -265,36 +238,166 @@ class Storage
 
 
     /**
-     * @param ChatMemberUpdated $chat_member
+     * @param ChatMemberUpdated $entity
      *
-     * @return int|null
+     * @return object|null
      *
-     * @throws BaseException
      * @throws TelegramException
      */
-    private static function chatMemberUpdatedInsert(ChatMemberUpdated $chat_member)
+    private static function chatMemberUpdatedInsert(ChatMemberUpdated $entity): ?object
     {
-        $chat = $chat_member->chat;
+        $chat = $entity->chat;
         self::chatInsert($chat);
 
-        $user = $chat_member->from;
+        $user = $entity->from;
         self::userUpsert($user);
 
         $repo = new ChatMemberUpdatedRepo();
-        $repo->chat_id = $chat_member->chat->id;
-        $repo->user_id = $chat_member->from->id;
-        $repo->date = self::getTimestamp($chat_member->date);
-        $repo->new_chat_member = self::entityToJson($chat_member->newChatMember);
-        $repo->old_chat_member = self::entityToJson($chat_member->oldChatMember);
-        $repo->invite_link = self::entityToJson($chat_member->inviteLink);
+        $repo->assign($entity);
+        $repo->chatId = $entity->chat->id;
+        $repo->userId = $entity->from->id;
+        $repo->date = self::getTimestamp($entity->date);
 
         $result = $repo->save();
         if (!$result) {
-            Yii::warning(['Insert updates error', $repo], 'telegram');
+            \Yii::warning(['Insert updates error', $repo], 'telegram');
             return null;
         }
 
-        return $repo->id;
+        return $repo->_id;
+    }
+
+    /**
+     * @param ChatBoostUpdated $entity
+     * @return object|null
+     * @throws TelegramException
+     */
+    private static function chatBoostUpdatedRequestInsert(ChatBoostUpdated $entity): ?object
+    {
+        $chat = $entity->chat;
+        self::chatInsert($chat);
+
+        $repo = new ChatBoostUpdatedRepo();
+        $repo->assign($entity);
+        $repo->chatId = $entity->chat->id;
+
+        $result = $repo->save();
+        if (!$result) {
+            \Yii::warning(['Insert updates error', $repo], 'telegram');
+            return null;
+        }
+
+        return $repo->_id;
+    }
+
+    /**
+     * @param ChatBoostUpdated $entity
+     * @return object|null
+     * @throws TelegramException
+     */
+    private static function chatBoostRemovedRequestInsert(ChatBoostRemoved $entity): ?object
+    {
+        $chat = $entity->chat;
+        self::chatInsert($chat);
+
+        $repo = new ChatBoostRemovedRepo();
+        $repo->assign($entity);
+        $repo->chatId = $entity->chat->id;
+        $repo->removeDate = self::getTimestamp($entity->removeDate);
+
+        $result = $repo->save();
+        if (!$result) {
+            \Yii::warning(['Insert updates error', $repo], 'telegram');
+            return null;
+        }
+
+        return $repo->_id;
+    }
+
+    /**
+     * @param MessageReactionUpdated $entity
+     * @return object|null
+     * @throws TelegramException
+     */
+    private static function messageReactionUpdatedRequestInsert(MessageReactionUpdated $entity): ?object
+    {
+        $chat = $entity->chat;
+        self::chatInsert($chat);
+
+        $user = $entity->user;
+        if ($user) {
+            self::userUpsert($user);
+        }
+
+        $actorChat = $entity->actorChat;
+        if ($actorChat) {
+            self::chatInsert($actorChat);
+        }
+
+
+        $repo = new MessageReactionUpdatedRepo();
+        $repo->assign($entity);
+        $repo->chatId = $chat->id;
+        $repo->userId = $user?->id;
+        $repo->actorChatId = $actorChat?->id;
+        $repo->date = self::getTimestamp($entity->date);
+
+        $result = $repo->save();
+        if (!$result) {
+            \Yii::warning(['Insert updates error', $repo], 'telegram');
+            return null;
+        }
+
+        return $repo->_id;
+    }
+
+    private static function messageReactionCountUpdatedRequestInsert(MessageReactionCountUpdated $entity)
+    {
+        $chat = $entity->chat;
+        self::chatInsert($chat);
+
+        $repo = new MessageReactionCountUpdatedRepo();
+        $repo->assign($entity);
+        $repo->chatId = $chat->id;
+        $repo->date = self::getTimestamp($entity->date);
+
+        $result = $repo->save();
+        if (!$result) {
+            \Yii::warning(['Insert updates error', $repo], 'telegram');
+            return null;
+        }
+
+        return $repo->_id;
+    }
+
+    /**
+     * @param ChatJoinRequest $entity
+     *
+     * @return object|null
+     *
+     * @throws TelegramException
+     */
+    private static function chatJoinRequestInsert(ChatJoinRequest $entity): ?object
+    {
+        $chat = $entity->chat;
+        self::chatInsert($chat);
+
+        $user = $entity->from;
+        self::userUpsert($user);
+
+        $repo = new ChatJoinRequestRepo();
+        $repo->assign($entity);
+        $repo->chatId = $entity->chat->id;
+        $repo->userId = $entity->from->id;
+        $repo->date = self::getTimestamp($entity->date);
+
+        $result = $repo->save();
+        if (!$result) {
+            \Yii::warning(['Insert updates error', $repo], 'telegram');
+            return null;
+        }
+
+        return $repo->_id;
     }
 
     //<editor-fold desc="*** User ***">
@@ -307,38 +410,33 @@ class Storage
      * @return bool If the insert was successful
      *
      * @throws TelegramException
-     * @throws BaseException
      */
-    public static function userUpsert(User $user, Chat $chat = null)
+    public static function userUpsert(User $user, Chat $chat = null): bool
     {
-        $userRepo = TelegramUserRepo::findOne($user->id);
-        if ($userRepo === null) {
-            $userRepo = new TelegramUserRepo(['id' => $user->id]);
+        $repo = TelegramUserRepo::findOne(['_id' => $user->id]);
+        if ($repo === null) {
+            $repo = new TelegramUserRepo(['_id' => $user->id]);
         }
 
-        $userRepo->is_bot = boolval($user->isBot);
-        $userRepo->username = $user->username;
-        $userRepo->first_name = $user->firstName;
-        $userRepo->last_name = $user->lastName;
-        $userRepo->language_code = $user->languageCode;
+        $repo->assign($user);
 
-        if (!$userRepo->save()) {
-            Yii::warning(['User save error', $userRepo->errors], 'telegram');
-            throw new TelegramException('User save error');
+        if (!$repo->save()) {
+            \Yii::warning(['User save error', $repo->errors], 'telegram');
+            throw new TelegramException(self::getRepoError('User save error', $repo));
         }
 
         // Also insert the relationship to the chat into the user_chat table
         if ($chat) {
-            $userChatRepo = UserChatRepo::findOne(['user_id' => $user->id, 'chat_id' => $chat->id]);
+            $userChatRepo = UserChatRepo::findOne(['userId' => $user->id, 'chatId' => $chat->id]);
             if ($userChatRepo === null) {
                 $userChatRepo = new UserChatRepo([
-                    'user_id' => $user->id,
-                    'chat_id' => $chat->id
+                    'userId' => $user->id,
+                    'chatId' => $chat->id
                 ]);
 
                 if (!$userChatRepo->save()) {
-                    Yii::warning(['User chat save error', $userChatRepo->errors], 'telegram');
-                    throw new TelegramException('User chat save error');
+                    \Yii::warning(['User chat save error', $userChatRepo->errors], 'telegram');
+                    throw new TelegramException(self::getRepoError('User chat save error', $userChatRepo));
                 }
             }
         }
@@ -355,7 +453,7 @@ class Storage
      *
      * @return ChatRepo[]|bool
      */
-    public static function chatSearch($select_chats_params)
+    public static function chatSearch($select_chats_params): array|bool
     {
         // Set defaults for omitted values.
         $select = ArrayHelper::merge([
@@ -443,10 +541,9 @@ class Storage
      *
      * @return bool If the insert was successful
      *
-     * @throws BaseException
      * @throws TelegramException
      */
-    public static function chatInsert(Chat $chat, ?string $migrate_to_chat_id = null)
+    public static function chatInsert(Chat $chat, ?string $migrate_to_chat_id = null): bool
     {
         $chat_id = $chat->id;
         $old_id = null;
@@ -458,22 +555,18 @@ class Storage
             $chat_id = $migrate_to_chat_id;
         }
 
-        $chatRepo = ChatRepo::findOne(['id' => $chat_id]);
-        if ($chatRepo === null) {
-            $chatRepo = new ChatRepo(['id' => $chat_id]);
+        $repo = ChatRepo::findOne(['_id' => $chat_id]);
+        if ($repo === null) {
+            $repo = new ChatRepo(['_id' => $chat_id]);
         }
 
-        $chatRepo->type = $chat_type;
-        $chatRepo->title = $chat->title;
-        $chatRepo->username = $chat->username;
-        $chatRepo->first_name = $chat->firstName;
-        $chatRepo->last_name = $chat->lastName;
-        $chatRepo->all_members_are_administrators = boolval($chat->allMembersAreAdministrators);
-        $chatRepo->old_id = $old_id;
+        $repo->assign($chat);
+        $repo->type = $chat_type;
+        $repo->oldId = $old_id;
 
-        if (!$chatRepo->save()) {
-            Yii::warning(['Chat save error', $chatRepo->errors], 'telegram');
-            throw new TelegramException('User chat save error');
+        if (!$repo->save()) {
+            \Yii::warning(['Chat save error', $repo->errors], 'telegram');
+            throw new TelegramException(self::getRepoError('User chat save error', $repo));
         }
 
         return true;
@@ -488,127 +581,107 @@ class Storage
      *
      * @return bool
      *
-     * @throws BaseException
      * @throws TelegramException
      */
-    public static function insertUpdateRequest(Update $update)
+    public static function insertUpdateRequest(Update $update): bool
     {
-        $chat_id                 = null;
-        $message_id              = null;
-        $edited_message_id       = null;
-        $channel_post_id         = null;
-        $edited_channel_post_id  = null;
-        $inline_query_id         = null;
-        $chosen_inline_result_id = null;
-        $callback_query_id       = null;
-        $shipping_query_id       = null;
-        $pre_checkout_query_id   = null;
-        $poll_id                 = null;
-        $poll_answer_poll_id     = null;
-        $my_chat_member_updated_id = null;
-        $chat_member_updated_id  = null;
+        $repo = new TelegramUpdateRepo();
+        $repo->_id = $update->updateId;
 
         if (($message = $update->message) && self::messageRequestInsert($message)) {
-            $chat_id = $message->chat->id;
-            $message_id = $message->messageId;
+            $repo->chatId = $message->chat->id;
+            $repo->messageId = $message->messageId;
         } elseif (($edited_message = $update->editedMessage) && self::editedMessageRequestInsert($edited_message)) {
-            $chat_id = $edited_message->chat->id;
-            $edited_message_id = $edited_message->editedMessageId;
+            $repo->chatId = $edited_message->chat->id;
+            $repo->editedMessageId = $edited_message->editedMessageId;
         } elseif (($channel_post = $update->channelPost) && self::messageRequestInsert($channel_post)) {
-            $chat_id         = $channel_post->chat->id;
-            $channel_post_id = $channel_post->messageId;
+            $repo->chatId         = $channel_post->chat->id;
+            $repo->channelPostId = $channel_post->messageId;
         } elseif (($edited_channel_post = $update->editedChannelPost)
             && self::editedMessageRequestInsert($edited_channel_post)
         ) {
-            $chat_id = $edited_channel_post->chat->id;
-            $edited_channel_post_id = $edited_channel_post->editedMessageId;
+            $repo->chatId = $edited_channel_post->chat->id;
+            $repo->editedChannelPostId = $edited_channel_post->editedMessageId;
         } elseif (($inline_query = $update->inlineQuery) && self::inlineQueryRequestInsert($inline_query)) {
-            $inline_query_id = $inline_query->id;
+            $repo->inlineQueryId = $inline_query->id;
         } elseif (($chosen_inline_result = $update->chosenInlineResult) &&
             self::chosenInlineResultRequestInsert($chosen_inline_result)
         ) {
-            $chosen_inline_result_id = $chosen_inline_result->chosen_inline_result_id;
-        } elseif (($callback_query = $update->callbackQuery) && self::callbackQueryRequestInsert($callback_query)) {
-            $callback_query_id = $callback_query->id;
+            $repo->chosenInlineResultId = $chosen_inline_result->resultId;
+        } elseif (($callback_query = $update->callbackQuery)) {
+            $repo->callbackQueryId = self::callbackQueryRequestInsert($callback_query);
         } elseif (($shipping_query = $update->shippingQuery) && self::shippingQueryRequestInsert($shipping_query)) {
-            $shipping_query_id = $shipping_query->id;
+            $repo->shippingQueryId = $shipping_query->id;
         } elseif (($pre_checkout_query = $update->preCheckoutQuery) &&
             self::preCheckoutQueryRequestInsert($pre_checkout_query)
         ) {
-            $pre_checkout_query_id = $pre_checkout_query->id;
+            $repo->preCheckoutQueryId = $pre_checkout_query->id;
         } elseif (($poll = $update->poll) && self::pollRequestInsert($poll)) {
-            $poll_id = $poll->id;
-        } elseif (($poll_answer = $update->pollAnswer) && self::pollAnswerRequestInsert($poll_answer)) {
-            $poll_answer_poll_id = $poll_answer->pollId;
+            $repo->pollId = $poll->id;
+        } elseif (($poll_answer = $update->pollAnswer)) {
+            $repo->pollAnswerId = self::pollAnswerRequestInsert($poll_answer);
         } elseif ($my_chat_member = $update->myChatMember) {
-            $my_chat_member_updated_id = self::chatMemberUpdatedInsert($my_chat_member);
+            $repo->myChatMemberId = self::chatMemberUpdatedInsert($my_chat_member);
         } elseif ($chat_member = $update->chatMember) {
-            $chat_member_updated_id = self::chatMemberUpdatedInsert($chat_member);
+            $repo->chatMemberId = self::chatMemberUpdatedInsert($chat_member);
+        } elseif ($chat_join_request = $update->chatJoinRequest) {
+            $repo->chatJoinRequestId = self::chatJoinRequestInsert($chat_join_request);
+        } elseif ($chat_boost_updated = $update->chatBoost) {
+            $repo->chatBoostId = self::chatBoostUpdatedRequestInsert($chat_boost_updated);
+        } elseif ($chat_boost_removed = $update->removedChatBoost) {
+            $repo->removedChatBoostId = self::chatBoostRemovedRequestInsert($chat_boost_removed);
+        } elseif ($data = $update->messageReaction) {
+            $repo->messageReactionId = self::messageReactionUpdatedRequestInsert($data);
+        } elseif ($data = $update->messageReactionCount) {
+            $repo->messageReactionCountId = self::messageReactionCountUpdatedRequestInsert($data);
         } else {
             return false;
         }
 
-        return self::telegramUpdateInsert(
-            $update->updateId,
-            $chat_id,
-            $message_id,
-            $edited_message_id,
-            $channel_post_id,
-            $edited_channel_post_id,
-            $inline_query_id,
-            $chosen_inline_result_id,
-            $callback_query_id,
-            $shipping_query_id,
-            $pre_checkout_query_id,
-            $poll_id,
-            $poll_answer_poll_id,
-            $my_chat_member_updated_id,
-            $chat_member_updated_id
-        );
+        return self::telegramUpdateInsert($repo);
     }
 
     /**
      * Insert Message request in db
      *
-     * @param Message $message
+     * @param Message $entity
      *
      * @return bool If the insert was successful
      *
      * @throws TelegramException
-     * @throws BaseException
      */
-    public static function messageRequestInsert(Message $message)
+    public static function messageRequestInsert(Message $entity): bool
     {
-        $date = self::getTimestamp($message->date);
+        $date = self::getTimestamp($entity->date);
 
         // Insert chat, update chat id in case it migrated
-        $chat = $message->chat;
-        self::chatInsert($chat, $message->migrateToChatId);
+        $chat = $entity->chat;
+        self::chatInsert($chat, $entity->migrateToChatId);
 
-        if ($senderChat = $message->senderChat) {
+        if ($senderChat = $entity->senderChat) {
             self::chatInsert($senderChat);
             $senderChat = $senderChat->id;
         }
 
         // Insert user and the relation with the chat
-        if ($user = $message->from) {
+        if ($user = $entity->from) {
             self::userUpsert($user, $chat);
         }
 
         // Insert the forwarded message user in users table
-        $forward_date = $message->forwardDate ? self::getTimestamp($message->forwardDate) : null;
+        $forward_date = $entity->forwardDate ? self::getTimestamp($entity->forwardDate) : null;
 
-        if ($forward_from = $message->forwardFrom) {
+        if ($forward_from = $entity->forwardFrom) {
             self::userUpsert($forward_from);
             $forward_from = $forward_from->id;
         }
-        if ($forward_from_chat = $message->forwardFromChat) {
+        if ($forward_from_chat = $entity->forwardFromChat) {
             self::chatInsert($forward_from_chat);
             $forward_from_chat = $forward_from_chat->id;
         }
 
         $via_bot_id = null;
-        if ($via_bot = $message->viaBot) {
+        if ($via_bot = $entity->viaBot) {
             self::userUpsert($via_bot);
             $via_bot_id = $via_bot->id;
         }
@@ -617,8 +690,8 @@ class Storage
         $new_chat_members_ids = null;
         $left_chat_member_id  = null;
 
-        $new_chat_members = $message->newChatMembers;
-        $left_chat_member = $message->leftChatMember;
+        $new_chat_members = $entity->newChatMembers;
+        $left_chat_member = $entity->leftChatMember;
         if (!empty($new_chat_members)) {
             foreach ($new_chat_members as $new_chat_member) {
                 if ($new_chat_member instanceof User) {
@@ -627,18 +700,17 @@ class Storage
                     $new_chat_members_ids[] = $new_chat_member->id;
                 }
             }
-            $new_chat_members_ids = implode(',', $new_chat_members_ids);
         } elseif ($left_chat_member) {
             // Insert the left chat user
             self::userUpsert($left_chat_member, $chat);
             $left_chat_member_id = $left_chat_member->id;
         }
 
-        $user_id = $user ? $user->id : null;
+        $user_id = $user?->id;
         $chat_id = $chat->id;
 
         $reply_to_message_id = null;
-        if ($reply_to_message = $message->replyToMessage) {
+        if ($reply_to_message = $entity->replyToMessage) {
             $reply_to_message_id = $reply_to_message->messageId;
             // please notice that, as explained in the documentation, reply_to_message don't contain other
             // reply_to_message field so recursion deep is 1
@@ -650,69 +722,28 @@ class Storage
             $reply_to_chat_id = $reply_to_message->chat->id;
         }
 
-        $messageRepo = MessageRepo::findOne(['chat_id' => $chat_id, 'id' => $message->messageId]);
-        if ($messageRepo === null) {
-            $messageRepo = new MessageRepo(['chat_id' => $chat_id, 'id' => $message->messageId]);
+        $repo = MessageRepo::findOne(['chatId' => $chat_id, 'id' => $entity->messageId]);
+        if ($repo === null) {
+            $repo = new MessageRepo(['chatId' => $chat_id, 'id' => $entity->messageId]);
         }
 
-        $messageRepo->user_id = $user_id;
-        $messageRepo->date = $date;
-        $messageRepo->sender_chat_id = $senderChat;
-        $messageRepo->forward_from = $forward_from;
-        $messageRepo->forward_from_chat = $forward_from_chat;
-        $messageRepo->forward_from_message_id = $message->forwardFromMessageId;
-        $messageRepo->forward_signature = $message->forwardSignature;
-        $messageRepo->forward_sender_name = $message->forwardSenderName;
-        $messageRepo->forward_date = $forward_date;
-        $messageRepo->reply_to_chat = $reply_to_chat_id;
-        $messageRepo->reply_to_message = $reply_to_message_id;
-        $messageRepo->via_bot = $via_bot_id;
-        $messageRepo->edit_date = self::getTimestamp($message->editDate);
-        $messageRepo->media_group_id = $message->mediaGroupId;
-        $messageRepo->author_signature = $message->authorSignature;
-        $messageRepo->text = $message->text;
-        $messageRepo->entities = self::entitiesArrayToJson($message->entities);
-        $messageRepo->caption_entities = self::entitiesArrayToJson($message->captionEntities);
-        $messageRepo->audio = self::entityToJson($message->audio);
-        $messageRepo->document = self::entityToJson($message->document);
-        $messageRepo->animation = self::entityToJson($message->animation);
-        $messageRepo->game = self::entityToJson($message->game);
-        $messageRepo->photo = self::entitiesArrayToJson($message->photo);
-        $messageRepo->sticker = self::entityToJson($message->sticker);
-        $messageRepo->video = self::entityToJson($message->video);
-        $messageRepo->voice = self::entityToJson($message->voice);
-        $messageRepo->video_note = self::entityToJson($message->videoNote);
-        $messageRepo->caption = $message->caption;
-        $messageRepo->contact = self::entityToJson($message->contact);
-        $messageRepo->location = self::entityToJson($message->location);
-        $messageRepo->venue = self::entityToJson($message->venue);
-        $messageRepo->poll = self::entityToJson($message->poll);
-        $messageRepo->dice = self::entityToJson($message->dice);
-        $messageRepo->new_chat_members = $new_chat_members_ids;
-        $messageRepo->left_chat_member = $left_chat_member_id;
-        $messageRepo->new_chat_title = $message->newChatTitle;
-        $messageRepo->new_chat_photo = self::entitiesArrayToJson($message->newChatPhoto);
-        $messageRepo->delete_chat_photo = boolval($message->deleteChatPhoto);
-        $messageRepo->group_chat_created = boolval($message->groupChatCreated);
-        $messageRepo->supergroup_chat_created = boolval($message->supergroupChatCreated);
-        $messageRepo->channel_chat_created = boolval($message->channelChatCreated);
-        $messageRepo->migrate_to_chat_id = $message->migrateToChatId;
-        $messageRepo->migrate_from_chat_id = $message->migrateFromChatId;
-        $messageRepo->pinned_message = self::entityToJson($message->pinnedMessage);
-        $messageRepo->invoice = self::entityToJson($message->invoice);
-        $messageRepo->successful_payment = self::entityToJson($message->successfulPayment);
-        $messageRepo->connected_website = $message->connectedWebsite;
-        $messageRepo->passport_data = self::entityToJson($message->passportData);
-        $messageRepo->proximity_alert_triggered = self::entityToJson($message->proximityAlertTriggered);
-        $messageRepo->message_auto_delete_timer_changed = self::entityToJson($message->messageAutoDeleteTimerChanged);
-        $messageRepo->voice_chat_started = self::entityToJson($message->voiceChatStarted);
-        $messageRepo->voice_chat_ended = self::entityToJson($message->voiceChatEnded);
-        $messageRepo->voice_chat_participants_invited = self::entityToJson($message->voiceChatParticipantsInvited);
-        $messageRepo->reply_markup = self::entityToJson($message->replyMarkup);
+        $repo->assign($entity);
+        $repo->userId = $user_id;
+        $repo->date = $date;
+        $repo->senderChatId = $senderChat;
+        $repo->forwardFrom = $forward_from;
+        $repo->forwardFromChat = $forward_from_chat;
+        $repo->forwardDate = $forward_date;
+        $repo->replyToChat = $reply_to_chat_id;
+        $repo->replyToMessage = $reply_to_message_id;
+        $repo->viaBot = $via_bot_id;
+        $repo->editDate = self::getTimestamp($entity->editDate);
+        $repo->newChatMembers = $new_chat_members_ids;
+        $repo->leftChatMember = $left_chat_member_id;
 
-        if (!$messageRepo->save()) {
-            Yii::warning(['Message save error', $messageRepo->errors], 'telegram');
-            throw new TelegramException('Message save error');
+        if (!$repo->save()) {
+            \Yii::warning(['Message save error', $repo->errors], 'telegram');
+            throw new TelegramException(self::getRepoError('Message save error', $repo));
         }
 
         return true;
@@ -721,43 +752,42 @@ class Storage
     /**
      * Insert Edited Message request in db
      *
-     * @param EditedMessage|EditedChannelPost $edited_message
+     * @param EditedChannelPost|EditedMessage $entity
      *
      * @return bool If the insert was successful
      *
      * @throws TelegramException
-     * @throws BaseException
+     * @throws \Exception
      */
-    public static function editedMessageRequestInsert($edited_message)
+    public static function editedMessageRequestInsert(EditedMessage|EditedChannelPost $entity): bool
     {
-        $edit_date = self::getTimestamp($edited_message->editDate);
+        $date = self::getTimestamp($entity->date);
+        $edit_date = self::getTimestamp($entity->editDate);
 
         // Insert chat
-        $chat = $edited_message->chat;
+        $chat = $entity->chat;
         self::chatInsert($chat);
 
         // Insert user and the relation with the chat
-        if ($user = $edited_message->from) {
+        if ($user = $entity->from) {
             self::userUpsert($user, $chat);
         }
 
-        $user_id = $user ? $user->id : null;
+        $user_id = $user?->id;
 
-        $messageRepo = new EditedMessageRepo();
-        $messageRepo->chat_id = $chat->id;
-        $messageRepo->message_id = $edited_message->messageId;
-        $messageRepo->user_id = $user_id;
-        $messageRepo->edit_date = $edit_date;
-        $messageRepo->text = $edited_message->text;
-        $messageRepo->entities = self::entitiesArrayToJson($edited_message->entities);
-        $messageRepo->caption = $edited_message->caption;
+        $repo = new EditedMessageRepo();
+        $repo->assign($entity);
+        $repo->chatId = $chat->id;
+        $repo->userId = $user_id;
+        $repo->date = $date;
+        $repo->editDate = $edit_date ?? $date;
 
-        if (!$messageRepo->insert()) {
-            Yii::warning(['Edited Message save error', $messageRepo->errors], 'telegram');
-            throw new TelegramException('Edited Message save error');
+        if (!$repo->insert()) {
+            \Yii::warning(['Edited Message save error', $repo->errors], 'telegram');
+            throw new TelegramException(self::getRepoError('Edited Message save error', $repo));
         }
 
-        $edited_message->editedMessageId = $messageRepo->id;
+        $entity->editedMessageId = $repo->_id;
 
         return true;
     }
@@ -765,35 +795,33 @@ class Storage
     /**
      * Insert inline query request into database
      *
-     * @param InlineQuery $inline_query
+     * @param InlineQuery $entity
      *
      * @return bool If the insert was successful
      *
      * @throws TelegramException
-     * @throws BaseException
      */
-    public static function inlineQueryRequestInsert(InlineQuery $inline_query)
+    public static function inlineQueryRequestInsert(InlineQuery $entity): bool
     {
         $user_id = null;
 
-        if ($user = $inline_query->from) {
+        if ($user = $entity->from) {
             $user_id = $user->id;
             self::userUpsert($user);
         }
 
-        $queryRepo = InlineQueryRepo::findOne($inline_query->id);
-        if ($queryRepo === null) {
-            $queryRepo = new InlineQueryRepo(['id' => $inline_query->id]);
+        $repo = InlineQueryRepo::findOne(['_id' => $entity->id]);
+        if ($repo === null) {
+            $repo = new InlineQueryRepo(['_id' => $entity->id]);
         }
 
-        $queryRepo->user_id = $user_id;
-        $queryRepo->location = self::entityToJson($inline_query->location);
-        $queryRepo->query = $inline_query->query;
-        $queryRepo->offset = $inline_query->offset;
+        $repo->assign($entity);
+        $repo->userId = $user_id;
 
-        if (!$queryRepo->save()) {
-            Yii::warning(['Inline query save error', $queryRepo->errors], 'telegram');
-            throw new TelegramException('Inline query save error');
+
+        if (!$repo->save()) {
+            \Yii::warning(['Inline query save error', $repo->errors], 'telegram');
+            throw new TelegramException(self::getRepoError('Inline query save error', $repo));
         }
 
         return true;
@@ -802,70 +830,64 @@ class Storage
     /**
      * Insert chosen inline result request into database
      *
-     * @param ChosenInlineResult $chosen_inline_result
+     * @param ChosenInlineResult $entity
      *
-     * @return bool If the insert was successful
+     * @return string ID if the insert was successful
      *
      * @throws TelegramException
-     * @throws BaseException
      */
-    public static function chosenInlineResultRequestInsert(ChosenInlineResult $chosen_inline_result)
+    public static function chosenInlineResultRequestInsert(ChosenInlineResult $entity): string
     {
         $user_id = null;
 
-        if ($user = $chosen_inline_result->from) {
+        if ($user = $entity->from) {
             $user_id = $user->id;
             self::userUpsert($user);
         }
 
-        $resultRepo = new ChosenInlineResultRepo();
-        $resultRepo->result_id = $chosen_inline_result->resultId;
-        $resultRepo->user_id = $user_id;
-        $resultRepo->location = self::entityToJson($chosen_inline_result->location);
-        $resultRepo->query = $chosen_inline_result->query;
-        $resultRepo->inline_message_id = $chosen_inline_result->inlineMessageId;
+        $repo = new ChosenInlineResultRepo();
+        $repo->assign($entity);
+        $repo->_id = $entity->resultId;
+        $repo->userId = $user_id;
 
-        if (!$resultRepo->save()) {
-            Yii::warning(['Inline result save error', $resultRepo->errors], 'telegram');
-            throw new TelegramException('Inline result save error');
+        if (!$repo->save()) {
+            \Yii::warning(['Inline result save error', $repo->errors], 'telegram');
+            throw new TelegramException(self::getRepoError('Inline result save error', $repo));
         }
 
-        $chosen_inline_result->chosen_inline_result_id = $resultRepo->id;
-
-        return true;
+        return $repo->_id;
     }
 
     /**
      * Insert callback query request into database
      *
-     * @param CallbackQuery $callback_query
+     * @param CallbackQuery $entity
      *
-     * @return bool If the insert was successful
+     * @return string ID if the insert was successful
      *
      * @throws TelegramException
-     * @throws BaseException
      */
-    public static function callbackQueryRequestInsert(CallbackQuery $callback_query)
+    public static function callbackQueryRequestInsert(CallbackQuery $entity): string
     {
-        $queryRepo = CallbackQueryRepo::findOne(['id' => $callback_query->id]);
-        if ($queryRepo === null) {
-            $queryRepo = new CallbackQueryRepo(['id' => $callback_query->id]);
+        $repo = CallbackQueryRepo::findOne(['_id' => $entity->id]);
+        if ($repo === null) {
+            $repo = new CallbackQueryRepo(['_id' => $entity->id]);
         }
 
         $user_id = null;
 
-        if ($user = $callback_query->from) {
+        if ($user = $entity->from) {
             $user_id = $user->id;
             self::userUpsert($user);
         }
 
         $chat_id    = null;
         $message_id = null;
-        if ($message = $callback_query->message) {
+        if ($message = $entity->message) {
             $chat_id = $message->chat->id;
             $message_id = $message->messageId;
 
-            $is_message = MessageRepo::find()->where(['chat_id' => $chat_id, 'id' => $message_id])->exists();
+            $is_message = MessageRepo::find()->where(['chatId' => $chat_id, 'id' => $message_id])->exists();
             if ($is_message) {
                 self::editedMessageRequestInsert($message);
             } else {
@@ -873,52 +895,47 @@ class Storage
             }
         }
 
-        $queryRepo->user_id = $user_id;
-        $queryRepo->chat_id = $chat_id;
-        $queryRepo->message_id = $message_id;
-        $queryRepo->inline_message_id = $callback_query->inlineMessageId;
-        $queryRepo->chat_instance = $callback_query->chatInstance;
-        $queryRepo->data = $callback_query->data;
-        $queryRepo->game_short_name = $callback_query->gameShortName;
+        $repo->assign($entity);
+        $repo->userId = $user_id;
+        $repo->chatId = $chat_id;
+        $repo->messageId = $message_id;
 
-        if (!$queryRepo->save()) {
-            Yii::warning(['Callback query save error', $queryRepo->errors], 'telegram');
-            throw new TelegramException('Callback query save error');
+        if (!$repo->save()) {
+            \Yii::warning(['Callback query save error', $repo->errors], 'telegram');
+            throw new TelegramException(self::getRepoError('Callback query save error', $repo));
         }
 
-        return true;
+        return $repo->_id;
     }
 
     /**
      * Insert shipping query request into database
      *
-     * @param ShippingQuery $shipping_query
+     * @param ShippingQuery $entity
      *
      * @return bool If the insert was successful
      *
      * @throws TelegramException
-     * @throws BaseException
      */
-    public static function shippingQueryRequestInsert(ShippingQuery $shipping_query)
+    public static function shippingQueryRequestInsert(ShippingQuery $entity): bool
     {
-        $queryRepo = ShippingQueryRepo::findOne(['id' => $shipping_query->id]);
-        if ($queryRepo === null) {
-            $queryRepo = new ShippingQueryRepo(['id' => $shipping_query->id]);
+        $repo = ShippingQueryRepo::findOne(['_id' => $entity->id]);
+        if ($repo === null) {
+            $repo = new ShippingQueryRepo(['_id' => $entity->id]);
         }
 
         $user_id = null;
-        if ($user = $shipping_query->from) {
+        if ($user = $entity->from) {
             $user_id = $user->id;
             self::userUpsert($user);
         }
 
-        $queryRepo->user_id = $user_id;
-        $queryRepo->invoice_payload = $shipping_query->invoicePayload;
-        $queryRepo->shipping_address = self::entityToJson($shipping_query->shippingAddress);
+        $repo->assign($entity);
+        $repo->userId = $user_id;
 
-        if (!$queryRepo->save()) {
-            Yii::warning(['Shipping query save error', $queryRepo->errors], 'telegram');
-            throw new TelegramException('Shipping query save error');
+        if (!$repo->save()) {
+            \Yii::warning(['Shipping query save error', $repo->errors], 'telegram');
+            throw new TelegramException(self::getRepoError('Shipping query save error', $repo));
         }
 
         return true;
@@ -927,36 +944,31 @@ class Storage
     /**
      * Insert pre checkout query request into database
      *
-     * @param PreCheckoutQuery $pre_checkout_query
+     * @param PreCheckoutQuery $entity
      *
      * @return bool If the insert was successful
      *
      * @throws TelegramException
-     * @throws BaseException
      */
-    public static function preCheckoutQueryRequestInsert(PreCheckoutQuery $pre_checkout_query)
+    public static function preCheckoutQueryRequestInsert(PreCheckoutQuery $entity): bool
     {
-        $queryRepo = PreCheckoutQueryRepo::findOne(['id' => $pre_checkout_query->id]);
-        if ($queryRepo === null) {
-            $queryRepo = new PreCheckoutQueryRepo(['id' => $pre_checkout_query->id]);
+        $repo = PreCheckoutQueryRepo::findOne(['_id' => $entity->id]);
+        if ($repo === null) {
+            $repo = new PreCheckoutQueryRepo(['_id' => $entity->id]);
         }
 
         $user_id = null;
-        if ($user = $pre_checkout_query->from) {
+        if ($user = $entity->from) {
             $user_id = $user->id;
             self::userUpsert($user);
         }
 
-        $queryRepo->user_id = $user_id;
-        $queryRepo->currency = $pre_checkout_query->currency;
-        $queryRepo->total_amount = $pre_checkout_query->totalAmount;
-        $queryRepo->invoice_payload = $pre_checkout_query->invoicePayload;
-        $queryRepo->shipping_option_id = $pre_checkout_query->shippingOptionId;
-        $queryRepo->order_info = $pre_checkout_query->orderInfo;
+        $repo->assign($entity);
+        $repo->userId = $user_id;
 
-        if (!$queryRepo->save()) {
-            Yii::warning(['PreCheckout query save error', $queryRepo->errors], 'telegram');
-            throw new TelegramException('PreCheckout query save error');
+        if (!$repo->save()) {
+            \Yii::warning(['PreCheckout query save error', $repo->errors], 'telegram');
+            throw new TelegramException(self::getRepoError('PreCheckout query save error', $repo));
         }
 
         return true;
@@ -965,36 +977,25 @@ class Storage
     /**
      * Insert poll request into database
      *
-     * @param Poll $poll
+     * @param Poll $entity
      *
      * @return bool If the insert was successful
      *
      * @throws TelegramException
-     * @throws BaseException
      */
-    public static function pollRequestInsert(Poll $poll)
+    public static function pollRequestInsert(Poll $entity): bool
     {
-        $pollRepo = PollRepo::findOne(['id' => $poll->id]);
-        if ($pollRepo === null) {
-            $pollRepo = new PollRepo(['id' => $poll->id]);
+        $repo = PollRepo::findOne(['_id' => $entity->id]);
+        if ($repo === null) {
+            $repo = new PollRepo(['_id' => $entity->id]);
         }
 
-        $pollRepo->question = $poll->question;
-        $pollRepo->options = self::entitiesArrayToJson($poll->options);
-        $pollRepo->total_voter_count = $poll->totalVoterCount;
-        $pollRepo->is_closed = boolval($poll->isClosed);
-        $pollRepo->is_anonymous = boolval($poll->isAnonymous);
-        $pollRepo->type = $poll->type;
-        $pollRepo->allows_multiple_answers = boolval($poll->allowsMultipleAnswers);
-        $pollRepo->correct_option_id = $poll->correctOptionId;
-        $pollRepo->explanation = $poll->explanation;
-        $pollRepo->explanation_entities = self::entitiesArrayToJson($poll->explanationEntities);
-        $pollRepo->open_period = $poll->openPeriod;
-        $pollRepo->close_date = self::getTimestamp($poll->closeDate);
+        $repo->assign($entity);
+        $repo->closeDate = self::getTimestamp($entity->closeDate);
 
-        if (!$pollRepo->save()) {
-            Yii::warning(['Poll save error', $pollRepo->errors], 'telegram');
-            throw new TelegramException('Poll save error');
+        if (!$repo->save()) {
+            \Yii::warning(['Poll save error', $repo->errors], 'telegram');
+            throw new TelegramException(self::getRepoError('Poll save error', $repo));
         }
 
         return true;
@@ -1005,12 +1006,11 @@ class Storage
      *
      * @param PollAnswer $poll_answer
      *
-     * @return bool If the insert was successful
+     * @return object ID if the insert was successful
      *
      * @throws TelegramException
-     * @throws BaseException
      */
-    public static function pollAnswerRequestInsert(PollAnswer $poll_answer)
+    public static function pollAnswerRequestInsert(PollAnswer $poll_answer): object
     {
         $user_id = null;
         if ($user = $poll_answer->user) {
@@ -1018,19 +1018,19 @@ class Storage
             self::userUpsert($user);
         }
 
-        $answerRepo = PollAnswerRepo::findOne(['poll_id' => $poll_answer->pollId, 'user_id' => $user_id]);
-        if ($answerRepo === null) {
-            $answerRepo = new PollAnswerRepo(['poll_id' => $poll_answer->pollId, 'user_id' => $user_id]);
+        $repo = PollAnswerRepo::findOne(['pollId' => $poll_answer->pollId, 'userId' => $user_id]);
+        if ($repo === null) {
+            $repo = new PollAnswerRepo(['pollId' => $poll_answer->pollId, 'userId' => $user_id]);
         }
 
-        $answerRepo->option_ids = $poll_answer->optionIds;
+        $repo->assign($poll_answer);
 
-        if (!$answerRepo->save()) {
-            Yii::warning(['Poll answer save error', $answerRepo->errors], 'telegram');
-            throw new TelegramException('Poll answer save error');
+        if (!$repo->save()) {
+            \Yii::warning(['Poll answer save error', $repo->errors], 'telegram');
+            throw new TelegramException(self::getRepoError('Poll answer save error', $repo));
         }
 
-        return true;
+        return $repo->_id;
     }
     //</editor-fold>
 
@@ -1044,21 +1044,20 @@ class Storage
      * @return bool If the insert was successful
      *
      * @throws TelegramException
-     * @throws BaseException
      */
-    public static function insertTelegramRequest(string $method, array $data)
+    public static function insertTelegramRequest(string $method, array $data): bool
     {
-        $chat_id = isset($data['chat_id']) ? $data['chat_id'] : null;
-        $inline_message_id = isset($data['inline_message_id']) ? $data['inline_message_id'] : null;
+        $chat_id = $data['chat_id'] ?? null;
+        $inline_message_id = $data['inline_message_id'] ?? null;
 
         $limiter = new RequestLimiter();
-        $limiter->chat_id = $chat_id;
-        $limiter->inline_message_id = $inline_message_id;
+        $limiter->chatId = $chat_id;
+        $limiter->inlineMessageId = $inline_message_id;
         $limiter->method = $method;
 
         if (!$limiter->save()) {
-            Yii::warning(['Request limiter save error', $limiter->errors], 'telegram');
-            throw new TelegramException('Request limiter save error');
+            \Yii::warning(['Request limiter save error', $limiter->errors], 'telegram');
+            throw new TelegramException(self::getRepoError('Request limiter save error', $limiter));
         }
 
         return true;
@@ -1068,32 +1067,32 @@ class Storage
      * Get Telegram API request count for current chat / message
      *
      * @param integer|null $chat_id
-     * @param string|null  $inline_message_id
+     * @param string|null $inline_message_id
      *
      * @return array Array containing TOTAL and CURRENT fields or false on invalid arguments
      */
-    public static function getTelegramRequestCount($chat_id = null, $inline_message_id = null)
+    public static function getTelegramRequestCount(int $chat_id = null, string $inline_message_id = null): array
     {
-        $date = self::getTimestamp();
-        $date_minute = self::getTimestamp(strtotime('-1 minute'));
+        $date = new UTCDateTime();
+        $date_minute = new UTCDateTime($date->toDateTime()->modify('-1 minute'));
 
         return [
             'LIMIT_PER_SEC_ALL' => RequestLimiter::find()
-                ->where(['>=', 'created_at', $date])
-                ->select('chat_id')
+                ->where(['>=', 'date', $date])
+                ->select('chatId')
                 ->distinct()
                 ->count(),
             'LIMIT_PER_SEC' => RequestLimiter::find()
-                ->where(['>=', 'created_at', $date_minute])
+                ->where(['>=', 'date', $date_minute])
                 ->andWhere([
                     'or',
-                    ['chat_id' => $chat_id, 'inline_message_id' => null],
-                    ['chat_id' => null, 'inline_message_id' => $inline_message_id],
+                    ['chatId' => $chat_id, 'inlineMessageId' => null],
+                    ['chatId' => null, 'inlineMessageId' => $inline_message_id],
                 ])
                 ->count(),
             'LIMIT_PER_MINUTE' => RequestLimiter::find()
-                ->where(['>=', 'created_at', $date_minute])
-                ->andWhere(['chat_id' => $chat_id])
+                ->where(['>=', 'date', $date_minute])
+                ->andWhere(['chatId' => $chat_id])
                 ->count()
         ];
     }

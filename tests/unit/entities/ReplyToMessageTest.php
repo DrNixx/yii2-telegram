@@ -1,11 +1,13 @@
-<?php
-namespace tests\unit\entities;
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
 
+namespace onix\telegram\tests\unit\entities;
+
+use Codeception\Test\Unit;
 use onix\telegram\entities\ReplyToMessage;
 use onix\telegram\entities\Update;
 use yii\helpers\Json;
 
-class ReplyToMessageTest extends \Codeception\Test\Unit
+class ReplyToMessageTest extends Unit
 {
     public function testChatType()
     {

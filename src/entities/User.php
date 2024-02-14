@@ -14,8 +14,8 @@ namespace onix\telegram\entities;
  * @property-read string $languageCode Optional. IETF language tag of the user's language
  * @property-read bool $canJoinGroups Optional. True, if the bot can be invited to groups. Returned only in getMe
  * @property-read bool $canReadAllGroupMessages Optional. True, if privacy mode is disabled for the bot
- * Returned only in getMe
- *
+ * @property-read bool $isPremium Optional. True, if this user is a Telegram Premium user
+ * @property-read bool $addedToAttachmentMenu Optional. True, if this user added the bot to the attachment menu
  * @property-read bool $supportsInlineQueries Optional. True, if the bot supports inline queries. Returned only in getMe
  */
 class User extends Entity
@@ -23,7 +23,7 @@ class User extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return [
             'id',
@@ -34,7 +34,10 @@ class User extends Entity
             'languageCode',
             'canJoinGroups',
             'canReadAllGroupMessages',
-            'supportsInlineQueries'
+            'isPremium',
+            'addedToAttachmentMenu',
+            'supportsInlineQueries',
+
         ];
     }
 }

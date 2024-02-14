@@ -1,25 +1,20 @@
 <?php
 namespace onix\telegram\models;
 
-use onix\data\ActiveQueryEx;
+use yii\mongodb\ActiveQuery;
 
 /**
  * This is the ActiveQuery class for [[CallbackQuery]].
  *
  * @see CallbackQuery
  */
-class CallbackQueryQuery extends ActiveQueryEx
+class CallbackQueryQuery extends ActiveQuery
 {
-    /*public function active()
-    {
-        return $this->andWhere('[[status]]=1');
-    }*/
-
     /**
      * {@inheritdoc}
      * @return CallbackQuery[]|array
      */
-    public function all($db = null)
+    public function all($db = null): array
     {
         return parent::all($db);
     }
@@ -28,7 +23,7 @@ class CallbackQueryQuery extends ActiveQueryEx
      * {@inheritdoc}
      * @return CallbackQuery|array|null
      */
-    public function one($db = null)
+    public function one($db = null): CallbackQuery|array|null
     {
         return parent::one($db);
     }

@@ -48,7 +48,7 @@ class EncryptedPassportElement extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return [
             'type',
@@ -67,7 +67,7 @@ class EncryptedPassportElement extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'files' => [PassportFile::class],

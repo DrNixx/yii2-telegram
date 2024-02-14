@@ -19,7 +19,7 @@ class PhotoSize extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['fileId', 'fileUniqueId', 'width', 'height', 'fileSize'];
     }

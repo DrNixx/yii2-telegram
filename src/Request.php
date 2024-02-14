@@ -2,6 +2,7 @@
 namespace onix\telegram;
 
 use CURLFile;
+use onix\telegram\entities\botCommandScope\BotCommandScope;
 use onix\telegram\entities\File;
 use onix\telegram\entities\inputMedia\InputMedia;
 use onix\telegram\entities\Message;
@@ -148,6 +149,20 @@ use yii\httpclient\Client;
  * for a chat. Any previously generated link is revoked. The bot must be an administrator in the chat for this to
  * work and must have the appropriate admin rights. Returns the new invite link as String on success.
  *
+ * @method static ServerResponse createChatInviteLink(array $data) Use this method to create an additional invite
+ * link for a chat. The bot must be an administrator in the chat for this to work and must have the appropriate
+ * admin rights. The link can be revoked using the method revokeChatInviteLink. Returns the new invite
+ * link as ChatInviteLink object.
+ *
+ * @method static ServerResponse editChatInviteLink(array $data) Use this method to edit a non-primary invite link
+ * created by the bot. The bot must be an administrator in the chat for this to work and must have the appropriate
+ * admin rights. Returns the edited invite link as a ChatInviteLink object.
+ *
+ * @method static ServerResponse revokeChatInviteLink(array $data) Use this method to revoke an invite link created
+ * by the bot. If the primary link is revoked, a new link is automatically generated. The bot must be an administrator
+ * in the chat for this to work and must have the appropriate admin rights.
+ * Returns the revoked invite link as ChatInviteLink object.
+ *
  * @method ServerResponse approveChatJoinRequest(array $data) Use this method to approve a chat join request.
  * The bot must be an administrator in the chat for this to work and must have the can_invite_users
  * administrator right. Returns True on success.
@@ -218,8 +233,8 @@ use yii\httpclient\Client;
  * @method ServerResponse setMyCommands(array $data) Use this method to change the list of the bot's commands.
  * Returns True on success.
  *
- * @method ServerResponse getMyCommands() Use this method to get the current list of the bot's commands.
- * Requires no parameters. Returns Array of BotCommand on success.
+ * @method ServerResponse getMyCommands(?BotCommandScope $scope = null, ?string $language_code = null) Use this method
+ * to get the current list of the bot's commands. Returns Array of BotCommand on success.
  *
  * @method ServerResponse deleteMyCommands() Use this method to delete the list of the bot's commands for the given
  * scope and user language. After deletion, higher level commands will be shown to affected users.
@@ -307,40 +322,40 @@ class Request extends BaseObject
      *
      * @var string
      */
-    public $api_base_uri = 'https://api.telegram.org';
+    public string $api_base_uri = 'https://api.telegram.org';
 
     /**
      * @var Client
      */
-    private $client;
+    private Client $client;
 
     /**
      * Request limiter
      *
      * @var boolean
      */
-    public $limiter_enabled = true;
+    public bool $limiter_enabled = true;
 
     /**
      * Request limiter's interval between checks
      *
-     * @var float
+     * @var float|int
      */
-    public $limiter_interval = 60;
+    public int|float $limiter_interval = 60;
 
     /**
      * Telegram object
      *
      * @var Telegram
      */
-    public $telegram;
+    public Telegram $telegram;
 
     /**
      * Get the current action that is being executed
      *
-     * @var string
+     * @var string|null
      */
-    private $current_action;
+    private ?string $current_action = null;
 
     /**
      * Available actions to send
@@ -351,7 +366,7 @@ class Request extends BaseObject
      *
      * @var array
      */
-    private $actions = [
+    private array $actions = [
         'getUpdates',
         'setWebhook',
         'deleteWebhook',
@@ -387,6 +402,9 @@ class Request extends BaseObject
         'setChatAdministratorCustomTitle',
         'setChatPermissions',
         'exportChatInviteLink',
+        'createChatInviteLink',
+        'editChatInviteLink',
+        'revokeChatInviteLink',
         'approveChatJoinRequest',
         'declineChatJoinRequest',
         'setChatPhoto',
@@ -436,7 +454,7 @@ class Request extends BaseObject
      *
      * @var array
      */
-    private $actions_need_dummy_param = [
+    private array $actions_need_dummy_param = [
         'deleteWebhook',
         'getWebhookInfo',
         'getMe',
@@ -451,7 +469,7 @@ class Request extends BaseObject
      *
      * @var array
      */
-    private $input_file_fields = [
+    private array $input_file_fields = [
         'setWebhook' => ['certificate'],
         'sendPhoto' => ['photo'],
         'sendAudio' => ['audio', 'thumb'],
@@ -468,7 +486,7 @@ class Request extends BaseObject
         'setStickerSetThumb' => ['thumb'],
     ];
 
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->client = new Client([
@@ -482,7 +500,7 @@ class Request extends BaseObject
      *
      * @param Telegram $telegram
      */
-    public function initialize(Telegram $telegram)
+    public function initialize(Telegram $telegram): void
     {
         $this->telegram = $telegram;
     }
@@ -493,7 +511,7 @@ class Request extends BaseObject
      * @return string
      * @throws TelegramException
      */
-    public function getInput()
+    public function getInput(): string
     {
         $input = file_get_contents('php://input');
 
@@ -514,7 +532,7 @@ class Request extends BaseObject
      *
      * @return array Fake response data
      */
-    public static function generateGeneralFakeServerResponse(array $data = [])
+    public static function generateGeneralFakeServerResponse(array $data = []): array
     {
         //PARAM BINDED IN PHPUNIT TEST FOR TestServerResponse.php
         //Maybe this is not the best possible implementation
@@ -557,7 +575,7 @@ class Request extends BaseObject
      *
      * @return array
      */
-    private function setUpRequestParams(array $data)
+    private function setUpRequestParams(array $data): array
     {
         $has_resource = false;
         $multipart    = [];
@@ -625,7 +643,7 @@ class Request extends BaseObject
      *
      * @return string
      */
-    private function mediaInputHelper($item, bool &$has_resource, array &$multipart)
+    private function mediaInputHelper(mixed $item, bool &$has_resource, array &$multipart): string
     {
         $was_array = is_array($item);
         $was_array || $item = [$item];
@@ -666,9 +684,9 @@ class Request extends BaseObject
     /**
      * Get the current action that's being executed
      *
-     * @return string
+     * @return string|null
      */
-    public function getCurrentAction()
+    public function getCurrentAction(): ?string
     {
         return $this->current_action;
     }
@@ -681,7 +699,7 @@ class Request extends BaseObject
      *
      * @return mixed Result of the HTTP Request
      */
-    protected function execute(string $action, array $data = [])
+    protected function execute(string $action, array $data = []): mixed
     {
         $result = null;
         $request_params = $this->setUpRequestParams($data);
@@ -703,7 +721,7 @@ class Request extends BaseObject
             if ($action === 'getUpdates') {
                 Yii::info($result, 'telegram-update');
             }
-        } catch (BaseException $e) {
+        } catch (BaseException) {
             $result = '';
         } finally {
             //Logging verbose debug output
@@ -722,7 +740,7 @@ class Request extends BaseObject
      * @return boolean
      * @throws TelegramException
      */
-    public function downloadFile(File $file)
+    public function downloadFile(File $file): bool
     {
         if (empty($this->telegram->downloadPath)) {
             throw new TelegramException('Download path not set!');
@@ -749,7 +767,7 @@ class Request extends BaseObject
             @fclose($fp);
 
             return $response->isOk && (filesize($file_path) > 0);
-        } catch (BaseException $e) {
+        } catch (BaseException) {
             return false;
         }
     }
@@ -766,16 +784,14 @@ class Request extends BaseObject
      * @return ServerResponse
      *
      * @throws TelegramException
-     * @throws BaseException
      */
-    public function send(string $action, array $data = [])
+    public function send(string $action, array $data = []): ServerResponse
     {
         $this->ensureValidAction($action);
         $this->addDummyParamIfNecessary($action, $data);
 
-        if (defined('PHPUNIT_TESTSUITE')) {
+        if (YII_ENV_TEST) {
             $fake_response = self::generateGeneralFakeServerResponse($data);
-
             return new ServerResponse($fake_response);
         }
 
@@ -826,7 +842,7 @@ class Request extends BaseObject
      * @todo Would be nice to find a better solution for this!
      *
      */
-    protected function addDummyParamIfNecessary(string $action, array &$data)
+    protected function addDummyParamIfNecessary(string $action, array &$data): void
     {
         if (in_array($action, $this->actions_need_dummy_param, true)) {
             // Can be anything, using a single letter to minimise request size.
@@ -841,7 +857,7 @@ class Request extends BaseObject
      *
      * @throws TelegramException
      */
-    private static function ensureNonEmptyData(array $data)
+    private static function ensureNonEmptyData(array $data): void
     {
         if (count($data) === 0) {
             throw new TelegramException('Data is empty!');
@@ -855,7 +871,7 @@ class Request extends BaseObject
      *
      * @throws TelegramException
      */
-    private function ensureValidAction(string $action)
+    private function ensureValidAction(string $action): void
     {
         if (!in_array($action, $this->actions, true)) {
             throw new TelegramException('The action "' . $action . '" doesn\'t exist!');
@@ -872,9 +888,8 @@ class Request extends BaseObject
      * @return ServerResponse
      *
      * @throws TelegramException
-     * @throws BaseException
      */
-    public function sendMessage(array $data)
+    public function sendMessage(array $data): ServerResponse
     {
         $text = $data['text'];
 
@@ -915,7 +930,7 @@ class Request extends BaseObject
      *
      * @return ServerResponse
      */
-    public function emptyResponse()
+    public function emptyResponse(): ServerResponse
     {
         return new ServerResponse(['ok' => true, 'result' => true]);
     }
@@ -930,13 +945,12 @@ class Request extends BaseObject
      * @return array
      *
      * @throws TelegramException
-     * @throws BaseException
      */
     public function sendToActiveChats(
         string $callback_function,
         array $data,
         array $select_chats_params
-    ) {
+    ): array {
         $this->ensureValidAction($callback_function);
 
         $chats = Storage::chatSearch($select_chats_params);
@@ -960,7 +974,7 @@ class Request extends BaseObject
      *
      * @throws TelegramException
      */
-    public function setLimiter(bool $enable = true, array $options = [])
+    public function setLimiter(bool $enable = true, array $options = []): void
     {
         $options_default = [
             'interval' => 1,
@@ -986,9 +1000,8 @@ class Request extends BaseObject
      * @param array $data
      *
      * @throws TelegramException
-     * @throws BaseException
      */
-    private function limitTelegramRequests(string $action, array $data = [])
+    private function limitTelegramRequests(string $action, array $data = []): void
     {
         if ($this->limiter_enabled) {
             $limited_methods = [
@@ -1091,6 +1104,9 @@ class Request extends BaseObject
      *
      * @param array $data
      * @return ServerResponse
+     *
+     * @deprecated
+     * @see Request::getChatMemberCount()
      */
     public function getChatMembersCount(array $data = []): ServerResponse
     {

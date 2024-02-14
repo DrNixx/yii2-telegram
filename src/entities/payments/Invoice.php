@@ -21,7 +21,7 @@ class Invoice extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['title', 'description', 'startParameter', 'currency', 'totalAmount'];
     }

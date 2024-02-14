@@ -1,25 +1,20 @@
 <?php
 namespace onix\telegram\models;
 
-use onix\data\ActiveQueryEx;
+use yii\mongodb\ActiveQuery;
 
 /**
  * This is the ActiveQuery class for [[PreCheckoutQuery]].
  *
  * @see PreCheckoutQuery
  */
-class PreCheckoutQueryQuery extends ActiveQueryEx
+class PreCheckoutQueryQuery extends ActiveQuery
 {
-    /*public function active()
-    {
-        return $this->andWhere('[[status]]=1');
-    }*/
-
     /**
      * {@inheritdoc}
      * @return PreCheckoutQuery[]|array
      */
-    public function all($db = null)
+    public function all($db = null): array
     {
         return parent::all($db);
     }
@@ -28,7 +23,7 @@ class PreCheckoutQueryQuery extends ActiveQueryEx
      * {@inheritdoc}
      * @return PreCheckoutQuery|array|null
      */
-    public function one($db = null)
+    public function one($db = null): ?PreCheckoutQuery
     {
         return parent::one($db);
     }

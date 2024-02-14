@@ -1,25 +1,20 @@
 <?php
 namespace onix\telegram\models;
 
-use onix\data\ActiveQueryEx;
+use yii\mongodb\ActiveQuery;
 
 /**
  * This is the ActiveQuery class for [[ShippingQuery]].
  *
  * @see ShippingQuery
  */
-class ShippingQueryQuery extends ActiveQueryEx
+class ShippingQueryQuery extends ActiveQuery
 {
-    /*public function active()
-    {
-        return $this->andWhere('[[status]]=1');
-    }*/
-
     /**
      * {@inheritdoc}
      * @return ShippingQuery[]|array
      */
-    public function all($db = null)
+    public function all($db = null): array
     {
         return parent::all($db);
     }
@@ -28,7 +23,7 @@ class ShippingQueryQuery extends ActiveQueryEx
      * {@inheritdoc}
      * @return ShippingQuery|array|null
      */
-    public function one($db = null)
+    public function one($db = null): ?ShippingQuery
     {
         return parent::one($db);
     }

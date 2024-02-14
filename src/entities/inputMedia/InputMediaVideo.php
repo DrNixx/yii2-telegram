@@ -32,7 +32,7 @@ class InputMediaVideo extends InputEntity implements InputMedia
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ArrayHelper::merge(
             parent::attributes(),

@@ -5,6 +5,7 @@ use onix\telegram\commands\AdminCommand;
 use onix\telegram\entities\Message;
 use onix\telegram\entities\ServerResponse;
 use onix\telegram\exceptions\TelegramException;
+use yii\base\Exception as BaseException;
 
 /**
  * Admin "/sendtoall" command
@@ -37,7 +38,7 @@ class SendtoallCommand extends AdminCommand
      * @return ServerResponse
      * @throws TelegramException
      */
-    public function execute()
+    public function execute(): ServerResponse
     {
         $text = $this->message->getMessageText(true);
 

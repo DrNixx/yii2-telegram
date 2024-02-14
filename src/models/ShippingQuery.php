@@ -2,6 +2,8 @@
 namespace onix\telegram\models;
 
 use onix\data\ActiveRecordEx;
+use onix\telegram\entities\payments\ShippingAddress;
+use onix\telegram\entities\payments\ShippingQuery as ShippingQueryEntity;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
@@ -10,92 +12,55 @@ use yii\db\Expression;
 /**
  * This is the model class for table "telegram.shipping_query".
  *
- * @property int $id Unique query identifier
- * @property int|null $user_id User who sent the query
- * @property string $invoice_payload Bot specified invoice payload
- * @property string $shipping_address User specified shipping address
- * @property string $created_at Entry date creation
- *
- * @property TelegramUpdate[] $telegramUpdates
- * @property User $user
+ * @property string $_id Unique query identifier
+ * @property int|null $userId User who sent the query
+ * @property string $invoicePayload Bot specified invoice payload
+ * @property ShippingAddress $shippingAddress User specified shipping address
  */
-class ShippingQuery extends ActiveRecordEx
+class ShippingQuery extends TelegramActiveRecord
 {
+    protected ?string $entityClass = ShippingQueryEntity::class;
+
+    protected array $attributeMap = [
+        'id' => '_id',
+        'from' => 'userId'
+    ];
+
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function collectionName(): array|string
     {
-        return 'telegram.shipping_query';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function behaviors()
-    {
-        $now = (self::getDb()->driverName === 'pgsql') ? "timezone('GMT'::text, now())" : 'now()';
-
-        return [
-            [
-                'class' => TimestampBehavior::class,
-                'attributes' => [
-                    ActiveRecord::EVENT_BEFORE_INSERT => ['created_at'],
-                    ActiveRecord::EVENT_BEFORE_UPDATE => [],
-                ],
-                'value' => new Expression($now),
-            ],
-        ];
+        return 'telegram_shipping_query';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
-            [['id', 'invoice_payload', 'shipping_address'], 'required'],
-            [['id', 'user_id'], 'default', 'value' => null],
-            [['id', 'user_id'], 'number'],
-            [['created_at'], 'safe'],
-            [['invoice_payload', 'shipping_address'], 'string', 'max' => 255],
-            [['id'], 'unique'],
+            [['_id', 'invoicePayload', 'shippingAddress'], 'required'],
+            [['_id'], 'string'],
+            [['userId'], 'integer'],
+            [['shippingAddress'], 'safe'],
+            [['invoicePayload'], 'string', 'max' => 255],
             [
-                ['user_id'],
+                ['userId'],
                 'exist',
                 'skipOnError' => true,
                 'targetClass' => User::class,
-                'targetAttribute' => ['user_id' => 'id']
+                'targetAttribute' => ['userId' => '_id']
             ],
         ];
-    }
-
-    /**
-     * Gets query for [[TelegramUpdates]].
-     *
-     * @return ActiveQuery|TelegramUpdateQuery
-     */
-    public function getTelegramUpdates()
-    {
-        return $this->hasMany(TelegramUpdate::class, ['shipping_query_id' => 'id']);
-    }
-
-    /**
-     * Gets query for [[User]].
-     *
-     * @return ActiveQuery|UserQuery
-     */
-    public function getUser()
-    {
-        return $this->hasOne(User::class, ['id' => 'user_id']);
     }
 
     /**
      * {@inheritdoc}
      * @return ShippingQueryQuery the active query used by this AR class.
      */
-    public static function find($alias = null)
+    public static function find(): ShippingQueryQuery
     {
-        return new ShippingQueryQuery(get_called_class(), ['as' => $alias]);
+        return new ShippingQueryQuery(get_called_class());
     }
 }

@@ -1,9 +1,11 @@
-<?php
-namespace tests\unit\entities;
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
 
+namespace onix\telegram\tests\unit\entities;
+
+use Codeception\Test\Unit;
 use onix\telegram\entities\WebhookInfo;
 
-class WebhookInfoTest extends \Codeception\Test\Unit
+class WebhookInfoTest extends Unit
 {
     /**
      * @var array Webhook data

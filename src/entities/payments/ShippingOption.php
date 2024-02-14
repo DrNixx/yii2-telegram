@@ -19,7 +19,7 @@ class ShippingOption extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['id', 'title', 'prices'];
     }
@@ -27,7 +27,7 @@ class ShippingOption extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'prices' => [LabeledPrice::class],

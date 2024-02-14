@@ -26,7 +26,7 @@ class LoginUrl extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['url', 'forwardText', 'botUsername', 'requestWriteAccess'];
     }

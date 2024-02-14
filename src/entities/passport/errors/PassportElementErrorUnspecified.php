@@ -17,7 +17,7 @@ class PassportElementErrorUnspecified extends ErrorEntity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ArrayHelper::merge(
             parent::attributes(),

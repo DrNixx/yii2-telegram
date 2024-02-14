@@ -17,7 +17,7 @@ abstract class ErrorEntity extends Entity implements PassportElementError
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['source', 'type', 'message'];
     }

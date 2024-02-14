@@ -1,25 +1,20 @@
 <?php
 namespace onix\telegram\models;
 
-use onix\data\ActiveQueryEx;
+use yii\mongodb\ActiveQuery;
 
 /**
  * This is the ActiveQuery class for [[InlineQuery]].
  *
  * @see InlineQuery
  */
-class InlineQueryQuery extends ActiveQueryEx
+class InlineQueryQuery extends ActiveQuery
 {
-    /*public function active()
-    {
-        return $this->andWhere('[[status]]=1');
-    }*/
-
     /**
      * {@inheritdoc}
      * @return InlineQuery[]|array
      */
-    public function all($db = null)
+    public function all($db = null): array
     {
         return parent::all($db);
     }
@@ -28,7 +23,7 @@ class InlineQueryQuery extends ActiveQueryEx
      * {@inheritdoc}
      * @return InlineQuery|array|null
      */
-    public function one($db = null)
+    public function one($db = null): ?InlineQuery
     {
         return parent::one($db);
     }

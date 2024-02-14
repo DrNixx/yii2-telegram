@@ -14,7 +14,7 @@ class UserProfilePhotos extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['photos', 'totalCount'];
     }
@@ -22,7 +22,7 @@ class UserProfilePhotos extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'photos' => PhotoSize::class,

@@ -32,7 +32,7 @@ class InputVenueMessageContent extends Entity implements InputMessageContent
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['latitude', 'longitude', 'title', 'address', 'foursquareId', 'foursquareType'];
     }

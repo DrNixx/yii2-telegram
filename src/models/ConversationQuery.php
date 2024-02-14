@@ -1,14 +1,14 @@
 <?php
 namespace onix\telegram\models;
 
-use onix\data\ActiveQueryEx;
+use yii\mongodb\ActiveQuery;
 
 /**
  * This is the ActiveQuery class for [[Conversation]].
  *
  * @see Conversation
  */
-class ConversationQuery extends ActiveQueryEx
+class ConversationQuery extends ActiveQuery
 {
     /*public function active()
     {
@@ -19,7 +19,7 @@ class ConversationQuery extends ActiveQueryEx
      * {@inheritdoc}
      * @return Conversation[]|array
      */
-    public function all($db = null)
+    public function all($db = null): array
     {
         return parent::all($db);
     }
@@ -28,7 +28,7 @@ class ConversationQuery extends ActiveQueryEx
      * {@inheritdoc}
      * @return Conversation|array|null
      */
-    public function one($db = null)
+    public function one($db = null): array|Conversation|null
     {
         return parent::one($db);
     }

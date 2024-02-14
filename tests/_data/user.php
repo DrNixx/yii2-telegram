@@ -1,15 +1,15 @@
 <?php
 return [
     'user1' => [
-        'id'         => 1,
-        'first_name' => 'first1',
-        'last_name'  => 'last1',
+        '_id'        => 1,
+        'firstName'  => 'first1',
+        'lastName'   => 'last1',
         'username'   => 'user1',
     ],
     'user2' => [
-        'id'         => 2,
-        'first_name' => 'first2',
-        'last_name'  => 'last2',
+        '_id'        => 2,
+        'firstName'  => 'first2',
+        'lastName'   => 'last2',
         'username'   => 'user2',
     ],
 ];

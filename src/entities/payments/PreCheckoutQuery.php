@@ -25,7 +25,7 @@ class PreCheckoutQuery extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['id', 'from', 'currency', 'totalAmount', 'invoicePayload', 'shippingOptionId', 'orderInfo'];
     }
@@ -33,7 +33,7 @@ class PreCheckoutQuery extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'from' => User::class,

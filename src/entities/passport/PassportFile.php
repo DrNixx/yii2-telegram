@@ -23,7 +23,7 @@ class PassportFile extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['fileId', 'fileUniqueId', 'fileSize', 'fileDate'];
     }

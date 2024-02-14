@@ -20,7 +20,7 @@ class OrderInfo extends Entity
     /**
      * @inheritDoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         return ['name', 'phoneNumber', 'email', 'shippingAddress'];
     }
@@ -28,7 +28,7 @@ class OrderInfo extends Entity
     /**
      * @inheritDoc
      */
-    protected function subEntities()
+    protected function subEntities(): array
     {
         return [
             'shippingAddress' => ShippingAddress::class,

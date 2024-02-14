@@ -105,10 +105,10 @@ class WhoisCommand extends AdminCommand
             if ($result instanceof ChatRepo) {
                 $chat = new Chat($result->attributes);
 
-                $user_id    = $result->id;
-                $created_at = $result->created_at;
-                $updated_at = $result->updated_at;
-                $old_id     = $result->old_id;
+                $user_id    = $result->_id;
+                $created_at = $result->createdAt;
+                $updated_at = $result->updatedAt;
+                $old_id     = $result->oldId;
             }
 
             if ($chat !== null) {
