@@ -2,6 +2,7 @@
 namespace onix\telegram\entities\inputMediaContent;
 
 use onix\telegram\entities\Entity;
+use onix\telegram\entities\LinkPreviewOptions;
 
 /**
  * Class InputTextMessageContent
@@ -16,11 +17,12 @@ use onix\telegram\entities\Entity;
  * ];
  * </code>
  *
- * @property string $messageText Text of the message to be sent, 1-4096 characters.
- * @property string $parseMode Optional. Send Markdown or HTML, if you want Telegram apps to show bold,
+ * @property-read string $messageText Text of the message to be sent, 1-4096 characters.
+ * @property-read string $parseMode Optional. Send Markdown or HTML, if you want Telegram apps to show bold,
  * italic, fixed-width text or inline URLs in your bot's message.
  *
- * @property bool $disableWebPagePreview Optional. Disables link previews for links in the sent message
+ * @property-read bool $disableWebPagePreview Depricated. Optional. Disables link previews for links in the sent message
+ * @property-read LinkPreviewOptions $linkPreviewOptions Optional. Link preview generation options for the message
  */
 class InputTextMessageContent extends Entity implements InputMessageContent
 {
@@ -30,5 +32,15 @@ class InputTextMessageContent extends Entity implements InputMessageContent
     public function attributes(): array
     {
         return ['messageText', 'parseMode', 'disableWebPagePreview'];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function subEntities(): array
+    {
+        return [
+            'linkPreviewOptions' => LinkPreviewOptions::class
+        ];
     }
 }

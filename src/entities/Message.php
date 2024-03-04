@@ -70,6 +70,9 @@ use onix\telegram\entities\topics\GeneralForumTopicUnhidden;
  *
  * @property-read Audio $audio Optional. Message is an audio file, information about the file
  * @property-read Document $document Optional. Message is a general file, information about the file
+ * @property-read LinkPreviewOptions $linkPreviewOptions Optional. Options used for link preview generation for
+ * the message, if it is a text message and link preview options were changed
+ *
  * @property-read Animation $animation Optional. Message is an animation, information about the animation.
  * For backward compatibility, when this field is set, the document field will also be set
  *
@@ -194,6 +197,7 @@ class Message extends Entity
             'authorSignature',
             'text',
             'entities',
+            'linkPreviewOptions',
             'animation',
             'audio',
             'document',
@@ -272,6 +276,7 @@ class Message extends Entity
             'captionEntities' => [MessageEntity::class],
             'audio' => Audio::class,
             'document' => Document::class,
+            'linkPreviewOptions' => LinkPreviewOptions::class,
             'animation' => Animation::class,
             'game' => Game::class,
             'photo' => [PhotoSize::class],
