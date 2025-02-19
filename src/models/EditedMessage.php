@@ -15,7 +15,7 @@ use onix\telegram\entities\EditedMessage as EditedMessageEntity;
  * @property UTCDateTime|null $date Date the message was last edited
  * @property UTCDateTime|null $editDate Date the message was last edited
  * @property string|null $text For text messages, the actual UTF-8 text of the message max message length 4096 char utf8
- * @property string|null $entities For text messages, special entities like usernames, URLs, bot commands, etc.
+ * @property mixed|null $entities For text messages, special entities like usernames, URLs, bot commands, etc.
  * that appear in the text
  *
  * @property string|null $caption For message with caption, the actual UTF-8 text of the caption
@@ -48,6 +48,7 @@ class EditedMessage extends TelegramActiveRecord
             [['chatId', 'messageId', 'userId'], 'integer'],
             [['date', 'editDate'], 'safe'],
             [['text', 'entities', 'caption'], 'string'],
+            [['entities'], 'safe'],
         ];
     }
 
