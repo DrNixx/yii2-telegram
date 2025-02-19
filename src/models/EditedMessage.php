@@ -47,7 +47,7 @@ class EditedMessage extends TelegramActiveRecord
         return [
             [['chatId', 'messageId', 'userId'], 'integer'],
             [['date', 'editDate'], 'safe'],
-            [['text', 'entities', 'caption'], 'string'],
+            [['text', 'caption'], 'string'],
             [['entities'], 'safe'],
         ];
     }
