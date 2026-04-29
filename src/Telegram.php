@@ -178,11 +178,11 @@ class Telegram extends Component
         if (!\Yii::$app->has('tgRequest')) {
             \Yii::$app->set('tgRequest', [
                 'class' => Request::class,
-                'telegram' => $this,
             ]);
         }
 
         $this->requestInstance = \Yii::$app->get('tgRequest');
+        $this->requestInstance->telegram = $this;
     }
 
     /**
